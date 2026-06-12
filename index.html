@@ -58,6 +58,7 @@ button,input,select{font-family:inherit}
 .card-title{font-size:10.5px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .chart-row{display:grid;grid-template-columns:1.85fr 1fr;gap:16px;margin-bottom:16px}
 .chart-wrap{position:relative}
+.chart-loading{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--sub);background:rgba(10,10,10,.72);padding:4px 9px;border:1px solid var(--border);border-radius:var(--r);z-index:5}
 
 /* ── Tables ── */
 .tbl-wrap{overflow-x:auto}
@@ -301,7 +302,7 @@ input[type=number]{-moz-appearance:textfield}
             <button class="pill on" data-r="all" onclick="Charts.setRange('all')">ALL</button>
           </div>
         </div>
-        <div class="chart-wrap" style="height:260px"><canvas id="c-perf"></canvas></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="c-perf"></canvas><div id="perf-loading" class="chart-loading" style="display:none"><span class="spin"></span><span id="perf-loading-t">Loading prices…</span></div></div>
       </div>
       <div class="card">
         <div class="card-title">Allocation</div>
@@ -717,6 +718,8 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 // CORS proxy — custom Cloudflare Worker
 const WORKER_PROXY = 'https://snowy-unit-ae21.mattia-colombo-ch.workers.dev/?url=';
 const proxify = u => WORKER_PROXY + encodeURIComponent(u);
+// Netlify Edge Function for batched live quotes (relative → resolves on the deployed site)
+const QUOTE_API = '/v1/quote';
 const QT = {EQUITY:'Equity',ETF:'ETF',MUTUALFUND:'Fund',INDEX:'Index',CRYPTOCURRENCY:'Crypto',CURRENCY:'FX',FUTURE:'Future',OPTION:'Option'};
 
 function fmt(n, d=2, c='') {
@@ -763,7 +766,7 @@ function toast(msg,type='ok') {
 
 // ── store ────────────────────────────────────────────────────
 const S = {
-  K:{TX:'ptf_tx',PR:'ptf_pr',CFG:'ptf_cfg',FX:'ptf_fx',ASSETS:'ptf_assets',COSTS:'ptf_costs'},
+  K:{TX:'ptf_tx',PR:'ptf_pr',CFG:'ptf_cfg',FX:'ptf_fx',ASSETS:'ptf_assets',COSTS:'ptf_costs',HIST:'ptf_hist'},
   txs(){try{return JSON.parse(localStorage.getItem(this.K.TX))||[];}catch{return[];}},
   saveTxs(v){localStorage.setItem(this.K.TX,JSON.stringify(v));},
   prices(){try{return JSON.parse(localStorage.getItem(this.K.PR))||{};}catch{return{};}},
@@ -775,7 +778,9 @@ const S = {
   assets(){try{return JSON.parse(localStorage.getItem(this.K.ASSETS))||{};}catch{return{};}},
   saveAssets(v){localStorage.setItem(this.K.ASSETS,JSON.stringify(v));},
   costs(){try{return JSON.parse(localStorage.getItem(this.K.COSTS))||[];}catch{return[];}},
-  saveCosts(v){localStorage.setItem(this.K.COSTS,JSON.stringify(v));}
+  saveCosts(v){localStorage.setItem(this.K.COSTS,JSON.stringify(v));},
+  hist(){try{return JSON.parse(localStorage.getItem(this.K.HIST))||{};}catch{return{};}},
+  saveHist(v){localStorage.setItem(this.K.HIST,JSON.stringify(v));}
 };
 
 // ── asset metadata (company name, ISIN, TER) ─────────────────
@@ -865,17 +870,48 @@ const Px = {
     }
     return null;
   },
+  async quoteApi(syms){
+    try{
+      const r=await fetch(`${QUOTE_API}?symbols=${encodeURIComponent(syms.join(','))}`,{cache:'no-cache'});
+      if(!r.ok)return null;
+      const d=await r.json();
+      const arr=Array.isArray(d)?d:(d.quotes||d.quoteResponse?.result||null);
+      if(!Array.isArray(arr)||!arr.length)return null;
+      const map={};
+      for(const q of arr){
+        if(!q||!q.symbol)continue;
+        const p=q.regularMarketPrice;
+        let chg=q.regularMarketChangePercent;
+        if((chg==null||isNaN(chg))&&p!=null&&q.regularMarketPreviousClose) chg=((p-q.regularMarketPreviousClose)/q.regularMarketPreviousClose)*100;
+        map[q.symbol]={p:p??null,chg:chg||0,ccy:q.currency||'USD'};
+        const nm=q.longName||q.shortName;                       // opportunistically learn the name
+        if(nm&&!Assets.name(q.symbol))Assets.set(q.symbol,{name:nm});
+      }
+      return map;
+    }catch{return null;}
+  },
   async fetchAll(syms) {
     if(!syms.length){this.setS('ok','No holdings');return;}
     this.setS('ldg',`Fetching ${syms.length} price${syms.length>1?'s':''}…`);
-    const cfg=Cfg.get(); const stored=S.prices(); const out={...stored};
-    let ok=0,fail=0;
+    const cfg=Cfg.get(); const out={...S.prices()};
     if(cfg.src==='manual'){this.setS('ok','Manual prices');this.cache=out;return;}
-    await Promise.all(syms.map(async sym=>{
-      const d=await this.yahoo(sym);
-      if(d){out[sym]={p:d.p,chg:d.chg,ccy:d.ccy,ts:Date.now()};ok++;}
-      else{if(!out[sym])out[sym]={p:null,chg:0,ccy:'USD'};fail++;}
-    }));
+    let ok=0,fail=0;
+    // 1) batched live quotes via the Netlify edge function (/v1/quote)
+    const batch=await this.quoteApi(syms);
+    const remaining=[];
+    for(const sym of syms){
+      const q=batch&&batch[sym];
+      if(q&&q.p!=null){out[sym]={p:q.p,chg:q.chg,ccy:q.ccy,ts:Date.now()};ok++;}
+      else remaining.push(sym);
+    }
+    // 2) fallback to the Cloudflare worker (per symbol) for anything /v1/quote missed
+    if(remaining.length){
+      await Promise.all(remaining.map(async sym=>{
+        const d=await this.yahoo(sym);
+        if(d){out[sym]={p:d.p,chg:d.chg,ccy:d.ccy,ts:Date.now()};ok++;}
+        else{if(!out[sym])out[sym]={p:null,chg:0,ccy:'USD'};fail++;}
+      }));
+    }
     this.cache=out; S.savePrices(out);
     if(fail===0) this.setS('ok',`${ok} price${ok>1?'s':''} loaded`);
     else if(ok>0) this.setS('ok',`${ok} loaded, ${fail} failed`);
@@ -953,12 +989,53 @@ const Port = {
   }
 };
 
+// ── historical monthly prices (cached, refreshed weekly) ─────
+const Hist = {
+  TTL:7*24*60*60*1000,   // 7 days — monthly closes don't change
+  fresh(sym){const e=S.hist()[sym];return !!(e&&e.data&&Object.keys(e.data).length&&Date.now()-e.ts<this.TTL);},
+  closeAt(sym,month){    // close for 'YYYY-MM', carrying forward the last known month
+    const e=S.hist()[sym]; if(!e||!e.data)return null;
+    if(e.data[month]!=null)return{c:e.data[month],ccy:e.ccy};
+    let best=null; for(const m in e.data){ if(m<=month&&(best===null||m>best))best=m; }
+    return best!==null?{c:e.data[best],ccy:e.ccy}:null;
+  },
+  async fetchMonthly(sym,since){
+    const p1=Math.floor(since.getTime()/1000);
+    const p2=Math.floor(Date.now()/1000)+86400;
+    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1mo&period1=${p1}&period2=${p2}`;
+    for(const u of[App.proxy(url),url]){
+      try{
+        const r=await fetch(u,{cache:'no-cache'});if(!r.ok)continue;
+        const d=await r.json();const res=d.chart?.result?.[0];if(!res)continue;
+        const ts=res.timestamp||[];
+        const cl=res.indicators?.quote?.[0]?.close||[];
+        const adj=res.indicators?.adjclose?.[0]?.adjclose||[];
+        const closes=(cl&&cl.length)?cl:adj;   // raw close = actual market value of the shares
+        const data={};
+        for(let i=0;i<ts.length;i++){if(closes[i]==null)continue;data[new Date(ts[i]*1000).toISOString().slice(0,7)]=closes[i];}
+        if(Object.keys(data).length)return{ccy:res.meta?.currency||'USD',data};
+      }catch{}
+    }
+    return null;
+  },
+  async ensure(symbols,since,onProgress){   // fetch only missing/stale, 500ms apart
+    const all=S.hist();
+    for(const sym of symbols){
+      if(this.fresh(sym))continue;
+      onProgress&&onProgress(sym);
+      const res=await this.fetchMonthly(sym,since);
+      if(res){all[sym]={ts:Date.now(),ccy:res.ccy,data:res.data};S.saveHist(all);}
+      await new Promise(r=>setTimeout(r,500));   // rate-limit between requests
+    }
+  }
+};
+
 // ── charts ───────────────────────────────────────────────────
 const COLORS=['#22c55e','#3b82f6','#a855f7','#f59e0b','#06b6d4','#ec4899','#84cc16','#f97316','#14b8a6','#8b5cf6','#eab308','#f43f5e'];
 const GRID='#1e1e1e', TICK='#666666';
 const TT={backgroundColor:'#141414',borderColor:'#2a2a2a',borderWidth:1,titleColor:'#f0f0f0',bodyColor:'#888888',padding:8,cornerRadius:2};
 const Charts = {
-  _p:null,_a:null,_db:null,_dp:null,_range:'all',
+  _p:null,_a:null,_db:null,_dp:null,_range:'all',_perfBusy:false,
   setRange(r){this._range=r;document.querySelectorAll('#perf-pills .pill').forEach(b=>b.classList.toggle('on',b.dataset.r===r));this.perf();},
   chartOpts(base){
     return{
@@ -967,29 +1044,67 @@ const Charts = {
       scales:{x:{grid:{color:GRID},ticks:{color:TICK,font:{size:10},maxTicksLimit:8}},y:{grid:{color:GRID},ticks:{color:TICK,font:{size:10},callback:v=>fmt(v,0,base)}}}
     };
   },
-  perf(){
-    const txs=S.txs(),base=Cfg.get().cur;
-    const pd=Port.perfData(txs,base);
-    if(this._p)this._p.destroy();
-    if(!pd)return;
+  async perf(){
+    const base=Cfg.get().cur, txs=S.txs();
+    const syms=[...new Set(txs.filter(t=>t.type!=='dividend').map(t=>t.symbol))];   // every symbol ever traded
+    if(!syms.length){ if(this._p){this._p.destroy();this._p=null;} return; }
+    const dts=txs.filter(t=>t.type!=='dividend').map(t=>t.date).sort();
+    const earliest=(dts[0]||'2025-01-01').slice(0,7);
+    const startYM=earliest<'2025-01'?earliest:'2025-01';   // earliest tx month, but at least Jan 2025
+    this._renderPerf(base,txs,startYM);                    // draw immediately with cached data
+    if(this._perfBusy)return;
+    if(!syms.some(s=>!Hist.fresh(s)))return;               // everything fresh → nothing to fetch
+    this._perfBusy=true; this._loading(true);
+    await Hist.ensure(syms,new Date(startYM+'-01T00:00:00Z'),sym=>this._loading(true,sym));
+    this._perfBusy=false; this._loading(false);
+    this._renderPerf(Cfg.get().cur,S.txs(),startYM);       // redraw with real history
+  },
+  _loading(show,sym){
+    const el=$('perf-loading'); if(!el)return;
+    el.style.display=show?'flex':'none';
+    if(show)$('perf-loading-t').textContent=sym?`Loading ${sym}…`:'Loading prices…';
+  },
+  _months(startYM,endYM){
+    const out=[]; let[y,m]=startYM.split('-').map(Number); const[ey,em]=endYM.split('-').map(Number);
+    while(y<ey||(y===ey&&m<=em)){ out.push(`${y}-${String(m).padStart(2,'0')}`); if(++m>12){m=1;y++;} }
+    return out;
+  },
+  _renderPerf(base,txs,startYM){
+    const now=new Date(), endYM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    let months=this._months(startYM,endYM);
+    const nd=txs.filter(t=>t.type!=='dividend');
+    let vals=[], costs=[];
+    for(const m of months){
+      const upto=m+'-31';
+      const h=Port.holdings(nd.filter(t=>t.date<=upto));   // shares held as of end of month m
+      let val=0, cost=0;
+      for(const sym of Object.keys(h)){
+        const hh=h[sym], pc=Hist.closeAt(sym,m);
+        const avg=hh.shares>0?hh.cost/hh.shares:0;          // Port.holdings is raw (no avg field)
+        const price=pc?pc.c:avg, pccy=pc?pc.ccy:hh.ccy;     // fall back to avg cost until prices load
+        val+=FX.cv(hh.shares*price,pccy,base);
+        cost+=FX.cv(hh.cost,hh.ccy,base);
+      }
+      vals.push(val); costs.push(cost);
+    }
     const range=this._range||'all';
-    let{dates,vals,costs}=pd;
     if(range!=='all'){
       const days={'1d':1,'1w':7,'1m':30,'6m':180,'1y':365}[range]||365;
-      const cut=new Date();cut.setDate(cut.getDate()-days);
-      const cs=cut.toISOString().slice(0,10);
-      const i=dates.findIndex(d=>d>=cs);
-      if(i>0){dates=dates.slice(i);vals=vals.slice(i);costs=costs.slice(i);}
+      const cut=new Date(); cut.setDate(cut.getDate()-days);
+      const cutYM=cut.toISOString().slice(0,7);
+      const i=months.findIndex(mm=>mm>=cutYM);
+      if(i>0){months=months.slice(i);vals=vals.slice(i);costs=costs.slice(i);}
     }
-    const fL=d=>{const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});};
+    const fL=m=>new Date(m+'-01T12:00:00').toLocaleDateString('en-US',{month:'short',year:'2-digit'});
     const opts=this.chartOpts(base);
     opts.interaction={intersect:false,mode:'index'};
     opts.plugins.tooltip.callbacks={label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y,2,base)}`};
+    if(this._p)this._p.destroy();
     this._p=new Chart($('c-perf').getContext('2d'),{
       type:'line',
-      data:{labels:dates.map(fL),datasets:[
-        {label:'Value',data:vals,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.05)',fill:true,tension:.3,pointRadius:dates.length>25?0:2.5,borderWidth:2},
-        {label:'Cost',data:costs,borderColor:'#666666',backgroundColor:'transparent',borderDash:[4,4],tension:.3,pointRadius:0,borderWidth:1.5}
+      data:{labels:months.map(fL),datasets:[
+        {label:'Value',data:vals,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.05)',fill:true,tension:.25,pointRadius:months.length>24?0:2,borderWidth:2},
+        {label:'Invested',data:costs,borderColor:'#666666',backgroundColor:'transparent',borderDash:[4,4],tension:.25,pointRadius:0,borderWidth:1.5}
       ]},
       options:opts
     });
@@ -1263,19 +1378,23 @@ const App = {
     ac.style.display='block';
   },
   async searchYahoo(q){
-    const target=`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0`;
-    for(const url of[this.proxy(target),target]){
-      try{
-        const r=await fetch(url,{cache:'no-cache'});if(!r.ok)continue;
-        const d=await r.json();
-        if(!d.quotes)continue;
-        return d.quotes.filter(x=>x.symbol&&x.quoteType!=='OPTION').map(x=>({
-          symbol:x.symbol,
-          name:(x.shortname||x.longname||x.symbol||'').replace(/</g,'&lt;'),
-          exch:x.exchange||'',
-          type:x.quoteType||''
-        }));
-      }catch{}
+    // primary query2, secondary query1 — different hosts sometimes resolve ISINs the other misses
+    const mk=h=>`https://${h}/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0`;
+    for(const target of[mk('query2.finance.yahoo.com'),mk('query1.finance.yahoo.com')]){
+      for(const url of[this.proxy(target),target]){
+        try{
+          const r=await fetch(url,{cache:'no-cache'});if(!r.ok)continue;
+          const d=await r.json();
+          if(!d.quotes)continue;
+          const out=d.quotes.filter(x=>x.symbol&&x.quoteType!=='OPTION').map(x=>({
+            symbol:x.symbol,
+            name:(x.shortname||x.longname||x.symbol||'').replace(/</g,'&lt;'),
+            exch:x.exchange||'',
+            type:x.quoteType||''
+          }));
+          if(out.length)return out;
+        }catch{}
+      }
     }
     return [];
   },
@@ -1308,20 +1427,74 @@ const App = {
     el.style.display='';
     el.innerHTML=`<span class="sel-tick">${this.selSym}</span><span class="sel-name">${this.selName||''}${this.selCcy?' · '+this.selCcy:''}</span><button type="button" class="sel-change" onclick="App.clearAsset()">Change</button>`;
   },
-  async fetchClose(symbol,date){
+  // map a Yahoo symbol → Stooq symbol + currency for European exchanges (null = use Yahoo)
+  stooqInfo(symbol){
+    const i=symbol.lastIndexOf('.'); if(i<0)return null;          // US tickers → Yahoo
+    const base=symbol.slice(0,i), suf=symbol.slice(i+1).toUpperCase();
+    const M={
+      DE:['DE','EUR'],F:['DE','EUR'],SG:['DE','EUR'],MU:['DE','EUR'],BE:['DE','EUR'],DU:['DE','EUR'],HM:['DE','EUR'],HA:['DE','EUR'],STU:['DE','EUR'],
+      MI:['IT','EUR'],PA:['FR','EUR'],AS:['NL','EUR'],BR:['BE','EUR'],MC:['ES','EUR'],LS:['PT','EUR'],VI:['AT','EUR'],HE:['FI','EUR'],IR:['IE','EUR'],
+      SW:['CH','CHF'],
+      L:['UK',null]   // London: native currency is ambiguous (USD vs GBp) → let Yahoo confirm it
+    };
+    const m=M[suf]; if(!m)return null;
+    return {stooq:base+'.'+m[0], ccy:m[1]};
+  },
+  async fetchStooqClose(stooqSym,date){
+    const p=n=>String(n).padStart(2,'0');
     const [Y,M,D]=date.split('-').map(Number);
-    const p1=Math.floor(Date.UTC(Y,M-1,D)/1000); // selected date midnight UTC
-    const p2=p1+86400;
+    const sel=`${Y}-${p(M)}-${p(D)}`;
+    const d2=`${Y}${p(M)}${p(D)}`;
+    const st=new Date(Date.UTC(Y,M-1,D)-86400000*25);
+    const d1=`${st.getUTCFullYear()}${p(st.getUTCMonth()+1)}${p(st.getUTCDate())}`;
+    const url=`https://stooq.com/q/d/l/?s=${encodeURIComponent(stooqSym.toLowerCase())}&d1=${d1}&d2=${d2}&i=d`;
+    try{
+      const r=await fetch(this.proxy(url),{cache:'no-cache'});if(!r.ok)return null;
+      const txt=(await r.text()).trim();
+      if(!/^date,/i.test(txt))return null;     // not CSV (challenge page / error)
+      const lines=txt.split(/\r?\n/).slice(1); // Date,Open,High,Low,Close,Volume
+      for(let i=lines.length-1;i>=0;i--){
+        const cols=lines[i].split(','); const day=cols[0], close=parseFloat(cols[4]);
+        if(!day||isNaN(close))continue;
+        if(day>sel)continue;
+        return {price:close,usedDate:day,exact:day===sel};
+      }
+    }catch{}
+    return null;
+  },
+  async fetchClose(symbol,date){
+    // multi-source: European (mapped) → Stooq first with Yahoo fallback; everything else → Yahoo
+    const known=(Assets.get(symbol).ccy)||this.selCcy||'';
+    const info=this.stooqInfo(symbol);
+    if(info){
+      const ccy=known||info.ccy;               // null only when London currency is still unknown
+      if(ccy){const s=await this.fetchStooqClose(info.stooq,date);if(s)return{price:s.price,ccy,source:'Stooq',exact:s.exact,usedDate:s.usedDate};}
+      const y=await this.fetchYahooClose(symbol,date);if(y)return y;
+      if(!ccy){const s=await this.fetchStooqClose(info.stooq,date);if(s)return{price:s.price,ccy:info.ccy||'EUR',source:'Stooq',exact:s.exact,usedDate:s.usedDate};}
+      return null;
+    }
+    return await this.fetchYahooClose(symbol,date);
+  },
+  async fetchYahooClose(symbol,date){
+    // Yahoo: window ending at the selected day; return the trading-day close ON or BEFORE it
+    const [Y,M,D]=date.split('-').map(Number);
+    const selDay=`${Y}-${String(M).padStart(2,'0')}-${String(D).padStart(2,'0')}`;
+    const p2=Math.floor((Date.UTC(Y,M-1,D)+86400000)/1000); // end of the selected day (UTC)
+    const p1=p2-86400*18;                                    // ~18-day window spans weekends/holidays
     const target=`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${p1}&period2=${p2}`;
     for(const url of[this.proxy(target),target]){
       try{
         const r=await fetch(url,{cache:'no-cache'});if(!r.ok)continue;
         const d=await r.json();const res=d.chart?.result?.[0];if(!res)continue;
-        const closes=res.indicators?.quote?.[0]?.close||[];
-        let price=closes.find(c=>c!=null); // close[0] for the day (skip nulls)
-        if(price==null)price=res.meta?.regularMarketPrice??null; // fallback: non-trading day
-        const ccy=res.meta?.currency||'USD';
-        if(price!=null)return{price,ccy};
+        const ts=res.timestamp||[], closes=res.indicators?.quote?.[0]?.close||[];
+        let price=null,usedDate=null,exact=false;
+        for(let i=ts.length-1;i>=0;i--){                       // newest → oldest
+          if(closes[i]==null)continue;
+          const day=new Date(ts[i]*1000).toISOString().slice(0,10);
+          if(day>selDay)continue;                              // ignore anything after the selected day
+          price=closes[i];usedDate=day;exact=(day===selDay);break;
+        }
+        if(price!=null)return{price,ccy:res.meta?.currency||'USD',source:'Yahoo Finance',exact,usedDate};
       }catch{}
     }
     return null;
@@ -1336,13 +1509,14 @@ const App = {
     const r=await this.fetchClose(this.selSym,date);
     if(this.selSym!==reqSym||$('f-dt').value!==reqDate)return; // stale
     if(r){
-      this.selCcy=r.ccy;$('f-cur').value=r.ccy;
+      this.selCcy=r.ccy;$('f-cur').value=r.ccy;Assets.set(reqSym,{ccy:r.ccy});
       prc.value=(+r.price).toFixed(r.price<10?4:2);
-      note.textContent=`Closing price on ${fDate(reqDate)} · ${r.ccy}`;
+      const when=r.exact?`close ${fDate(reqDate)}`:`nearest close ${fDate(r.usedDate)}`;
+      note.textContent=`${r.source} · ${when} · ${r.ccy}`;
       this.renderSelected();
     } else {
       prc.readOnly=false;
-      note.textContent='Could not fetch price — enter it manually';
+      note.textContent='No price found for this date — enter it manually';
     }
     this.calc();
   },
