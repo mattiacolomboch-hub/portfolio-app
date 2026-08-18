@@ -26,7 +26,8 @@
       "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,760 --screenshot=/tmp/foot.png \"file:///tmp/pf-foot.html\")",
       "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,470 --screenshot=/tmp/dash.png \"file://$\\(pwd\\)/index.html\")",
       "Bash(sed -i '' -e 's/<div class=\"panel\" id=\"tab-settings\">/<div class=\"panel on\" id=\"tab-settings\">/' -e 's/<div class=\"panel on\" id=\"tab-dashboard\">/<div class=\"panel\" id=\"tab-dashboard\">/' /tmp/pf-set.html)",
-      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1100,560 --screenshot=/tmp/set.png \"file:///tmp/pf-set.html\")"
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1100,560 --screenshot=/tmp/set.png \"file:///tmp/pf-set.html\")",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,150 --screenshot=/tmp/nav.png \"file://$\\(pwd\\)/index.html\")"
     ]
   }
 }
