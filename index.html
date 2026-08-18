@@ -989,21 +989,21 @@ const Port = {
   }
 };
 
-// ── historical monthly prices (cached, refreshed weekly) ─────
+// ── historical daily closing prices (per-range cache, 24h TTL) ─────
 const Hist = {
-  DAY:24*60*60*1000, WEEK:7*24*60*60*1000,
+  DAY:24*60*60*1000,
   // per-range Yahoo params; cached separately per (symbol,range)
   CFG:{
     '1w':{range:'5d',  interval:'1d'},
     '1m':{range:'1mo', interval:'1d'},
     '6m':{range:'6mo', interval:'1d'},
-    '1y':{range:'1y',  interval:'1wk'},
-    '5y':{range:'5y',  interval:'1mo'},
-    'all':{range:'max',interval:'1mo'},
+    '1y':{range:'1y',  interval:'1d'},
+    '5y':{range:'5y',  interval:'1d'},
+    'all':{range:'max',interval:'1d'},
   },
-  ttl(rk){return this.CFG[rk].interval==='1mo'?this.WEEK:this.DAY;}, // 7d for monthly, 24h for daily/weekly
+  ttl(rk){return this.DAY;}, // daily data for every range → 24h cache
   entry(sym,rk){const e=S.hist()[sym];return (e&&e[rk])||null;},
-  fresh(sym,rk){const e=this.entry(sym,rk);return !!(e&&e.data&&Object.keys(e.data).length&&Date.now()-e.ts<this.ttl(rk));},
+  fresh(sym,rk){const e=this.entry(sym,rk);return !!(e&&e.data&&Object.keys(e.data).length&&e.iv===this.CFG[rk].interval&&Date.now()-e.ts<this.ttl(rk));},
   dates(sym,rk){const e=this.entry(sym,rk);return e&&e.data?Object.keys(e.data):[];},
   closeAt(sym,rk,dateStr){    // close for 'YYYY-MM-DD', carrying forward the last known point
     const e=this.entry(sym,rk); if(!e||!e.data)return null;
@@ -1035,7 +1035,7 @@ const Hist = {
       if(this.fresh(sym,rk))continue;
       onProgress&&onProgress(sym);
       const res=await this.fetch(sym,rk);
-      if(res){if(!all[sym]||typeof all[sym]!=='object')all[sym]={};all[sym][rk]={ts:Date.now(),ccy:res.ccy,data:res.data};S.saveHist(all);}
+      if(res){if(!all[sym]||typeof all[sym]!=='object')all[sym]={};all[sym][rk]={ts:Date.now(),iv:this.CFG[rk].interval,ccy:res.ccy,data:res.data};S.saveHist(all);}
       await new Promise(r=>setTimeout(r,500));   // rate-limit between requests
     }
   }
@@ -1073,30 +1073,26 @@ const Charts = {
     el.style.display=show?'flex':'none';
     if(show)$('perf-loading-t').textContent=sym?`Loading ${sym}…`:'Loading prices…';
   },
-  _months(startYM,endYM){
-    const out=[]; let[y,m]=startYM.split('-').map(Number); const[ey,em]=endYM.split('-').map(Number);
-    while(y<ey||(y===ey&&m<=em)){ out.push(`${y}-${String(m).padStart(2,'0')}`); if(++m>12){m=1;y++;} }
-    return out;
-  },
   _renderPerf(base,txs){
     const nd=txs.filter(t=>t.type!=='dividend');
     if(!nd.length){ if(this._p){this._p.destroy();this._p=null;} return; }
     const today=new Date(), todayStr=today.toISOString().slice(0,10);
     const earliest=nd.map(t=>t.date).sort()[0];
     const rk=this._range||'all';
-    const monthly=(Hist.CFG[rk]||Hist.CFG.all).interval==='1mo';
     const syms=[...new Set(nd.map(t=>t.symbol))];
-    // rolling window start for 1W/1M; the Yahoo range param bounds the others. Never before the first transaction.
-    const winDays={'1w':7,'1m':30}[rk];
-    let startStr=earliest;
-    if(winDays){ const st=new Date(today); st.setUTCDate(st.getUTCDate()-winDays); const ws=st.toISOString().slice(0,10); if(ws>startStr)startStr=ws; }
-    // data points = union of every symbol's cached dates for this range, within the window
-    const set=new Set();
-    syms.forEach(s=>Hist.dates(s,rk).forEach(dd=>{ if(dd>=startStr&&dd<=todayStr)set.add(dd); }));
-    let dates=[...set].sort();
-    if(monthly) dates=dates.filter(dd=>dd.slice(0,7)!==todayStr.slice(0,7));  // current month → represented by the today point
-    // right edge is ALWAYS today
-    if(!dates.length||dates[dates.length-1]!==todayStr) dates.push(todayStr);
+    // x-axis dates — one point per trading day; only the look-back distance changes between ranges
+    let dates;
+    if(rk==='1w'){
+      // 1W: always 7 calendar days ending today; weekend gaps carry forward the last trading close (via Hist.closeAt)
+      dates=[]; for(let i=6;i>=0;i--){ const d=new Date(today); d.setUTCDate(d.getUTCDate()-i); dates.push(d.toISOString().slice(0,10)); }
+      if(dates[0]<earliest) dates=dates.filter(dd=>dd>=earliest);   // never before the first transaction
+    } else {
+      // union of every symbol's cached trading days within the range, never before the first transaction
+      const set=new Set();
+      syms.forEach(s=>Hist.dates(s,rk).forEach(dd=>{ if(dd>=earliest&&dd<=todayStr)set.add(dd); }));
+      dates=[...set].sort();
+      if(!dates.length||dates[dates.length-1]!==todayStr) dates.push(todayStr);   // right edge = today (live price)
+    }
     const priceFor=(sym,dateStr,isToday)=>{
       if(isToday){const pd=Px.get(sym);if(pd&&pd.p!=null)return{c:pd.p,ccy:pd.ccy};}   // today = live price
       return Hist.closeAt(sym,rk,dateStr);
@@ -1129,9 +1125,7 @@ const Charts = {
       }
       dates.unshift(ystStr); vals.unshift(yv); costs.unshift(yc);
     }
-    const lblOf=dd=> monthly
-      ? new Date(dd+'T12:00:00').toLocaleDateString('en-US',{month:'short',year:'2-digit'})
-      : new Date(dd+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const lblOf=dd=> new Date(dd+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const labels=dates.map(lblOf);
     const opts=this.chartOpts(base);
     opts.interaction={intersect:false,mode:'index'};
@@ -1140,8 +1134,8 @@ const Charts = {
     this._p=new Chart($('c-perf').getContext('2d'),{
       type:'line',
       data:{labels,datasets:[
-        {label:'Value',data:vals,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.05)',fill:true,tension:.25,pointRadius:vals.length<=2?4:(vals.length>40?0:2),borderWidth:2},
-        {label:'Invested',data:costs,borderColor:'#666666',backgroundColor:'transparent',borderDash:[4,4],tension:.25,pointRadius:0,borderWidth:1.5}
+        {label:'Value',data:vals,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.05)',fill:true,tension:.35,pointRadius:0,pointHoverRadius:4,borderWidth:2},
+        {label:'Invested',data:costs,borderColor:'#666666',backgroundColor:'transparent',borderDash:[4,4],tension:.35,pointRadius:0,pointHoverRadius:0,borderWidth:1.5}
       ]},
       options:opts
     });
