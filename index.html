@@ -255,6 +255,29 @@ input[type=number]{-moz-appearance:textfield}
 .fstat .fl{font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--sub);margin-bottom:0}
 .fstat .fv{font-size:20px;font-weight:600;margin-top:9px;color:#e0e0e0;font-family:var(--mono);line-height:1.25;word-break:break-word}
 .fstat .fs{font-size:11px;margin-top:6px;font-family:var(--mono);color:var(--sub)}
+/* ── E domani? simulator ── */
+.sim-grid{display:grid;grid-template-columns:1fr 1.7fr;gap:16px;align-items:start}
+@media(max-width:1100px){.sim-grid{grid-template-columns:1fr}}
+.sim-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.sim-field{flex:1 1 96px;min-width:80px;position:relative}
+.sim-seg{display:flex;gap:6px;margin-bottom:14px}
+.sim-seg button{flex:1;padding:6px 8px;background:none;border:1px solid var(--border);border-radius:var(--r);color:var(--sub);font-size:11px;font-weight:600;cursor:pointer;transition:.12s}
+.sim-seg button.on{background:var(--surface2);color:#fff;border-color:var(--border2)}
+.sim-cost{font-size:10.5px;color:var(--sub);margin:8px 0 2px;min-height:14px;font-family:var(--mono)}
+.sim-act{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface2);margin-top:8px}
+.sim-act .sa-main{font-size:12px;color:#e0e0e0}
+.sim-act .sa-sub{font-size:10.5px;color:var(--sub);margin-top:2px;font-family:var(--mono)}
+.sim-act .sa-x{background:none;border:none;color:var(--sub);cursor:pointer;font-size:18px;line-height:1;flex-shrink:0}
+.sim-act .sa-x:hover{color:var(--red)}
+.sim-empty{font-size:11.5px;color:var(--dim);padding:14px 2px;text-align:center}
+.sim-assum{width:100%;margin-top:6px}
+.sim-assum th,.sim-assum td{padding:6px 6px;font-size:11px}
+.sim-assum td:first-child{color:#e0e0e0;font-weight:600}
+.sim-in{width:56px;padding:3px 5px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:#e0e0e0;font-family:var(--mono);font-size:11px;text-align:right}
+.sim-in:focus{outline:none;border-color:var(--accent)}
+.sim-diff{font-size:12px;color:var(--sub);margin:10px 0 2px;font-family:var(--mono)}
+.sim-disc{font-size:10px;color:var(--dim);border-top:1px solid var(--border);margin-top:16px;padding-top:10px;line-height:1.5}
+.sim-mini-ac{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);max-height:220px;overflow-y:auto;z-index:20;display:none}
 
 /* ── Responsive ── */
 @media(max-width:1100px){.chips{grid-template-columns:repeat(2,1fr)}.chart-row{grid-template-columns:1fr}}
@@ -284,6 +307,7 @@ input[type=number]{-moz-appearance:textfield}
     <button class="nav-item" data-tab="dividends">Dividends</button>
     <button class="nav-item" data-tab="costs">Costs</button>
     <button class="nav-item" data-tab="funny">Funny Stats</button>
+    <button class="nav-item" data-tab="domani">E domani?</button>
     <button class="nav-item" data-tab="settings">Settings</button>
   </nav>
   <div class="nav-actions">
@@ -458,6 +482,46 @@ input[type=number]{-moz-appearance:textfield}
   <div class="panel" id="tab-funny">
     <div class="card-title" style="font-size:15px;color:var(--text);margin-bottom:18px;text-transform:none;letter-spacing:0">Your Investing Habits</div>
     <div class="fstat-grid" id="funny-grid"></div>
+  </div>
+
+  <!-- E DOMANI? (sandbox simulator) -->
+  <div class="panel" id="tab-domani">
+    <div class="card-title" style="font-size:15px;color:var(--text);text-transform:none;letter-spacing:0;margin-bottom:2px">E domani?</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:16px">Sandbox simulator — start from today's real portfolio, add hypothetical actions, and see how it could evolve.</div>
+    <div class="sim-grid">
+      <!-- LEFT: sandbox actions -->
+      <div class="card">
+        <div class="card-title">Sandbox Actions</div>
+        <div class="sim-seg" id="sim-seg">
+          <button data-k="buy" class="on" onclick="Sim.setKind('buy')">Buy</button>
+          <button data-k="sell" onclick="Sim.setKind('sell')">Sell</button>
+          <button data-k="recurring" onclick="Sim.setKind('recurring')">Recurring</button>
+        </div>
+        <div id="sim-form"></div>
+        <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:8px">
+          <div class="card-title" style="margin-bottom:4px">Added Actions</div>
+          <div id="sim-list"></div>
+        </div>
+      </div>
+      <!-- RIGHT: projection -->
+      <div class="card">
+        <div class="card-title">Projection
+          <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--sub);display:inline-flex;align-items:center;gap:6px">
+            Horizon <input class="sim-in" id="sim-horizon" type="number" min="1" max="80" value="10" style="width:52px" oninput="Sim.run()"> yrs
+          </span>
+        </div>
+        <div class="tbl-wrap" style="max-height:190px;overflow:auto;margin-bottom:12px">
+          <table class="sim-assum">
+            <thead><tr><th style="text-align:left">Asset</th><th>Return %</th><th>Div %</th><th>WHT %</th><th>TER %</th></tr></thead>
+            <tbody id="sim-assum-body"></tbody>
+          </table>
+        </div>
+        <div class="chart-wrap" style="height:230px"><canvas id="c-sim"></canvas></div>
+        <div class="sim-diff" id="sim-diff"></div>
+        <div class="proj-metrics4" id="sim-stats" style="margin-top:12px;margin-bottom:0"></div>
+        <div class="sim-disc">⚠️ This is a hypothetical simulation for educational purposes only — <strong>not financial advice</strong>. Projections assume constant annual returns, dividend yields and costs, which never happen in reality. Actual results will differ. Do your own research.</div>
+      </div>
+    </div>
   </div>
 
   <!-- BACKTEST -->
@@ -1405,8 +1469,226 @@ const Funny = {
   }
 };
 
+// ── E domani? sandbox simulator ──────────────────────────────
+const Sim = {
+  _kind:'buy', _c:null, actions:[], assum:{}, _pick:null, _sT:null, _res:[], _booted:false, GBPUSD:1.27,
+  render(){
+    if(!this._booted){
+      this._booted=true;
+      document.addEventListener('click',e=>{const ac=$('sim-ac');if(ac&&!ac.contains(e.target)&&e.target!==$('sim-search'))ac.style.display='none';});
+    }
+    this.renderForm(); this.run(); this._loadCagr();
+  },
+  // ── baseline & symbols ──
+  base(){return Cfg.get().cur;},
+  money(v){return fmt(v,0,this.base());},
+  baseHoldings(){
+    const {arr}=Port.enrich(Port.holdings(S.txs()),this.base());
+    return arr.filter(h=>h.val>0).map(h=>({sym:h.sym,name:Assets.name(h.sym)||h.sym,shares:h.shares,value:h.val}));
+  },
+  symbols(){const s=new Set(this.baseHoldings().map(h=>h.sym));this.actions.forEach(a=>{if(a.sym)s.add(a.sym);});return[...s];},
+  horizon(){return Math.max(1,Math.min(80,Math.floor(+$('sim-horizon').value||10)));},
+  monthOf(dateStr){if(!dateStr)return 0;const d=new Date(dateStr+'T00:00:00'),n=new Date();return Math.max(0,(d.getFullYear()-n.getFullYear())*12+(d.getMonth()-n.getMonth()));},
+  // ── per-asset assumptions ──
+  suffix(sym){const i=sym.lastIndexOf('.');return i<0?'':sym.slice(i+1).toUpperCase();},
+  whDefault(sym){const s=this.suffix(sym);
+    if(!s)return 15;                                                            // US
+    if(s==='SW'||s==='VX')return 35;                                           // Switzerland
+    if(['DE','F','SG','MU','BE','DU','HM','HA','STU'].includes(s))return 26.375;// Germany
+    if(s==='PA')return 12.8;                                                    // France
+    return 15;},
+  autoRet(sym){
+    const e=Hist.entry(sym,'all');
+    if(e&&e.data){const ds=Object.keys(e.data).sort();
+      if(ds.length>1){const first=e.data[ds[0]],last=e.data[ds[ds.length-1]];
+        const yrs=(Date.parse(ds[ds.length-1])-Date.parse(ds[0]))/(365.25*864e5);
+        if(first>0&&yrs>0.5){const c=(Math.pow(last/first,1/yrs)-1)*100;if(isFinite(c))return Math.max(-10,Math.min(30,c));}}}
+    return 7;},
+  defaults(sym){return{ret:+this.autoRet(sym).toFixed(1),dy:2,wt:this.whDefault(sym),ter:Assets.ter(sym)??0};},
+  A(sym){const d=this.defaults(sym),o=this.assum[sym]||{};return{ret:o.ret??d.ret,dy:o.dy??d.dy,wt:o.wt??d.wt,ter:o.ter??d.ter};},
+  setAssum(sym,key,v){const n=parseFloat(v);if(!this.assum[sym])this.assum[sym]={};this.assum[sym][key]=isNaN(n)?undefined:n;this.run();},
+  // ── Degiro-style fees ──
+  fee(sym){const s=this.suffix(sym);if(!s)return{amt:0.5,ccy:'USD',ex:'US'};if(s==='L')return{amt:1.75,ccy:'GBP',ex:'LSE'};return{amt:2,ccy:'EUR',ex:'Euronext/Xetra'};},
+  feeBase(sym){const f=this.fee(sym);return f.ccy==='GBP'?FX.cv(f.amt*this.GBPUSD,'USD',this.base()):FX.cv(f.amt,f.ccy,this.base());},
+  // ── add-action form ──
+  setKind(k){this._kind=k;this._pick=null;document.querySelectorAll('#sim-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));this.renderForm();},
+  renderForm(){
+    const f=$('sim-form');if(!f)return;
+    const today=new Date().toISOString().slice(0,10);
+    const searchBlock=`<div class="sim-field" style="flex:1 1 100%">
+        <label class="fl">Asset</label>
+        <input class="fc" id="sim-search" placeholder="Search name or ticker…" autocomplete="off" oninput="Sim.onSearch()">
+        <div class="sim-mini-ac" id="sim-ac"></div>
+        <div id="sim-pick" style="font-size:11px;color:var(--sub);margin-top:5px"></div>
+      </div>`;
+    if(this._kind==='sell'){
+      const hs=this.baseHoldings();
+      f.innerHTML=`<div class="sim-row">
+          <div class="sim-field" style="flex:1 1 100%"><label class="fl">Holding</label>
+            <select class="fc" id="sim-sell" onchange="Sim.updateCost()">${hs.length?hs.map(h=>`<option value="${h.sym}">${h.name} · ${(+h.shares).toFixed(2)} sh</option>`).join(''):'<option value="">No holdings</option>'}</select></div>
+        </div>
+        <div class="sim-row" style="margin-top:8px">
+          <div class="sim-field"><label class="fl">Quantity</label><input class="fc" id="sim-qty" type="number" min="0" step="any" placeholder="0" oninput="Sim.updateCost()"></div>
+          <div class="sim-field" style="flex:0 0 64px"><label class="fl">&nbsp;</label><button class="btn btn-s btn-sm" style="width:100%" onclick="Sim.sellMax()">Max</button></div>
+        </div>
+        <div class="sim-cost" id="sim-cost"></div>
+        <button class="btn btn-p btn-sm" style="width:100%" onclick="Sim.add()">+ Add Sell</button>`;
+    } else if(this._kind==='buy'){
+      f.innerHTML=`${searchBlock}
+        <div class="sim-row" style="margin-top:8px">
+          <div class="sim-field"><label class="fl">Amount</label><input class="fc" id="sim-amt" type="number" min="0" placeholder="1000"></div>
+          <div class="sim-field" style="flex:0 0 74px"><label class="fl">Ccy</label><select class="fc" id="sim-ccy"><option>USD</option><option>EUR</option><option>CHF</option></select></div>
+          <div class="sim-field"><label class="fl">Date</label><input class="fc" id="sim-date" type="date" value="${today}" min="${today}"></div>
+        </div>
+        <div class="sim-cost" id="sim-cost"></div>
+        <button class="btn btn-p btn-sm" style="width:100%" onclick="Sim.add()">+ Add Buy</button>`;
+    } else {
+      f.innerHTML=`${searchBlock}
+        <div class="sim-row" style="margin-top:8px">
+          <div class="sim-field"><label class="fl">Amount / month</label><input class="fc" id="sim-amt" type="number" min="0" placeholder="200"></div>
+          <div class="sim-field" style="flex:0 0 74px"><label class="fl">Ccy</label><select class="fc" id="sim-ccy"><option>USD</option><option>EUR</option><option>CHF</option></select></div>
+        </div>
+        <div class="sim-row" style="margin-top:8px">
+          <div class="sim-field"><label class="fl">Start</label><input class="fc" id="sim-start" type="date" value="${today}"></div>
+          <div class="sim-field"><label class="fl">End</label><input class="fc" id="sim-end" type="date"></div>
+        </div>
+        <div class="sim-cost" id="sim-cost"></div>
+        <button class="btn btn-p btn-sm" style="width:100%" onclick="Sim.add()">+ Add Recurring</button>`;
+    }
+    this.renderList(); this.updateCost();
+  },
+  onSearch(){
+    clearTimeout(this._sT);const q=$('sim-search').value.trim();this._pick=null;$('sim-pick').textContent='';
+    const ac=$('sim-ac');if(q.length<2){ac.style.display='none';return;}
+    ac.innerHTML='<div class="ac-msg" style="padding:8px 11px;color:var(--sub);font-size:11px"><span class="spin"></span> Searching…</div>';ac.style.display='block';
+    this._sT=setTimeout(async()=>{
+      const list=await App.searchYahoo(q);if($('sim-search').value.trim()!==q)return;
+      this._res=list;
+      ac.innerHTML=list.length?list.map((it,i)=>`<div class="ac-item" onclick="Sim.pick(${i})"><span class="ac-sym">${it.symbol}</span><span class="ac-name">${it.name}</span><span class="ac-exch">${it.exch||''}</span></div>`).join(''):'<div class="ac-msg" style="padding:8px 11px;color:var(--sub);font-size:11px">No matches</div>';
+      ac.style.display='block';
+    },260);
+  },
+  pick(i){const it=this._res[i];if(!it)return;this._pick={symbol:it.symbol,name:it.name};$('sim-search').value=it.name||it.symbol;$('sim-ac').style.display='none';$('sim-pick').innerHTML=`<span style="color:#e0e0e0;font-weight:600">${it.symbol}</span> selected · WHT default ${this.whDefault(it.symbol)}%`;this.updateCost();},
+  sellMax(){const h=this.baseHoldings().find(x=>x.sym===$('sim-sell').value);if(h){$('sim-qty').value=+h.shares.toFixed(4);this.updateCost();}},
+  updateCost(){
+    const el=$('sim-cost');if(!el)return;const b=this.base();
+    if(this._kind==='sell'){
+      const sym=$('sim-sell')?.value;if(!sym){el.textContent='';return;}
+      const f=this.fee(sym);
+      el.innerHTML=`Est. fee ~${this.money(this.feeBase(sym))} (${f.ex}) · dividends withheld at ${this.whDefault(sym)}%`;
+    } else {
+      const sym=this._pick?.symbol;if(!sym){el.textContent='Pick an asset to see estimated cost';return;}
+      const f=this.fee(sym);const per=this._kind==='recurring'?'/order':'';
+      el.innerHTML=`Est. fee ~${this.money(this.feeBase(sym))}${per} (${f.ex})`;
+    }
+  },
+  add(){
+    const id='a'+Date.now()+Math.random().toString(36).slice(2,6);
+    if(this._kind==='sell'){
+      const sym=$('sim-sell')?.value,qty=+$('sim-qty').value||0;
+      const h=this.baseHoldings().find(x=>x.sym===sym);
+      if(!h||qty<=0)return toast('Enter a quantity to sell','err');
+      const frac=Math.min(1,qty/h.shares);
+      this.actions.push({id,kind:'sell',sym,name:h.name,qty,frac});
+    } else {
+      const sym=this._pick?.symbol;const amount=+$('sim-amt').value||0;const ccy=$('sim-ccy').value;
+      if(!sym)return toast('Search and pick an asset first','err');
+      if(amount<=0)return toast('Enter an amount','err');
+      if(this._kind==='buy'){this.actions.push({id,kind:'buy',sym,name:this._pick.name,amount,ccy,date:$('sim-date').value||new Date().toISOString().slice(0,10)});}
+      else{const start=$('sim-start').value,end=$('sim-end').value;if(!end||end<start)return toast('Set a valid end date','err');this.actions.push({id,kind:'recurring',sym,name:this._pick.name,amount,ccy,start,end});}
+    }
+    this._pick=null;this.renderForm();this.run();this._loadCagr();
+  },
+  remove(id){this.actions=this.actions.filter(a=>a.id!==id);this.renderForm();this.run();},
+  renderList(){
+    const el=$('sim-list');if(!el)return;
+    if(!this.actions.length){el.innerHTML='<div class="sim-empty">No actions yet — the simulated line matches your current portfolio.</div>';return;}
+    el.innerHTML=this.actions.map(a=>{
+      let main,sub;
+      if(a.kind==='sell'){main=`<span style="color:var(--red)">Sell</span> ${a.name}`;sub=`${(+a.qty).toFixed(2)} sh (~${(a.frac*100).toFixed(0)}% of position)`;}
+      else if(a.kind==='buy'){main=`<span style="color:var(--green)">Buy</span> ${a.name}`;sub=`${fmt(a.amount,0,a.ccy)} on ${fDate(a.date)}`;}
+      else{main=`<span style="color:var(--blue)">Recurring</span> ${a.name}`;sub=`${fmt(a.amount,0,a.ccy)}/mo · ${fDate(a.start)} → ${fDate(a.end)}`;}
+      return`<div class="sim-act"><div><div class="sa-main">${main}</div><div class="sa-sub">${sub}</div></div><button class="sa-x" onclick="Sim.remove('${a.id}')">×</button></div>`;
+    }).join('');
+  },
+  renderAssum(){
+    const body=$('sim-assum-body');if(!body)return;
+    const syms=this.symbols();
+    if(!syms.length){body.innerHTML='<tr><td colspan="5" style="color:var(--dim);text-align:center;padding:12px">No holdings yet — add a Buy action to simulate.</td></tr>';return;}
+    body.innerHTML=syms.map(s=>{const a=this.A(s);const inp=(k,v)=>`<input class="sim-in" type="number" step="0.1" value="${v}" onchange="Sim.setAssum('${s}','${k}',this.value)">`;
+      return`<tr><td>${Assets.name(s)||s}</td><td style="text-align:center">${inp('ret',a.ret)}</td><td style="text-align:center">${inp('dy',a.dy)}</td><td style="text-align:center">${inp('wt',a.wt)}</td><td style="text-align:center">${inp('ter',a.ter)}</td></tr>`;
+    }).join('');
+  },
+  // ── projection engine (monthly compounding) ──
+  simulate(useActions){
+    const base=this.base(),years=this.horizon(),M=years*12;
+    const port={};this.baseHoldings().forEach(h=>{port[h.sym]=(port[h.sym]||0)+h.value;});
+    const V0=Object.values(port).reduce((s,v)=>s+v,0);
+    const injects=[],sells=[];let txnFee=0,invested=0;
+    if(useActions)for(const a of this.actions){
+      if(a.kind==='buy'){injects.push({m:this.monthOf(a.date),sym:a.sym,amt:FX.cv(a.amount,a.ccy,base)});txnFee+=this.feeBase(a.sym);invested+=FX.cv(a.amount,a.ccy,base);}
+      else if(a.kind==='sell'){sells.push({m:0,sym:a.sym,frac:a.frac});txnFee+=this.feeBase(a.sym);}
+      else{const s=Math.max(0,this.monthOf(a.start)),e=Math.min(M,this.monthOf(a.end));for(let m=s;m<=e;m++){injects.push({m,sym:a.sym,amt:FX.cv(a.amount,a.ccy,base)});txnFee+=this.feeBase(a.sym);invested+=FX.cv(a.amount,a.ccy,base);}}
+    }
+    const applyAt=m=>{sells.filter(x=>x.m===m).forEach(x=>{if(port[x.sym])port[x.sym]*=(1-x.frac);});injects.filter(x=>x.m===m).forEach(x=>{port[x.sym]=(port[x.sym]||0)+x.amt;});};
+    let totalNetDiv=0,totalTer=0;
+    applyAt(0);
+    const sum=()=>Object.values(port).reduce((s,v)=>s+v,0);
+    const series=[sum()];
+    for(let m=1;m<=M;m++){
+      applyAt(m);
+      for(const sym in port){const a=this.A(sym);let v=port[sym];
+        v*=(1+a.ret/100/12);
+        const net=v*(a.dy/100/12)*(1-a.wt/100);v+=net;totalNetDiv+=net;
+        const ter=v*(a.ter/100/12);v-=ter;totalTer+=ter;
+        port[sym]=v;}
+      if(m%12===0)series.push(sum());
+    }
+    return{series,final:series[series.length-1],V0,totalIn:V0+invested,totalNetDiv,txnFee,totalTer,years};
+  },
+  run(){
+    if(!this._booted||!$('c-sim'))return;
+    this.renderAssum();this.renderList();
+    const base=this.base(),years=this.horizon();
+    const b=this.simulate(false),s=this.simulate(true);
+    const y0=new Date().getFullYear(),labels=[];for(let y=0;y<=years;y++)labels.push(y0+y);
+    const sym=SYMS[base]||'';
+    const absK=v=>{const a=Math.abs(v);if(a>=1e6)return sym+(v/1e6).toFixed(2)+'M';if(a>=1e3)return sym+(v/1e3).toFixed(0)+'K';return sym+Math.round(v);};
+    if(this._c)this._c.destroy();
+    this._c=new Chart($('c-sim').getContext('2d'),{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'Simulated',data:s.series,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.06)',fill:true,borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25},
+        {label:'Baseline (as-is)',data:b.series,borderColor:'#9aa0a6',backgroundColor:'transparent',borderDash:[5,4],borderWidth:1.5,pointRadius:0,pointHoverRadius:0,tension:.25}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
+        plugins:{legend:{labels:{color:LIGHT,font:{size:11},usePointStyle:true,pointStyle:'line'}},
+          tooltip:{...TT,titleColor:LIGHT,bodyColor:LIGHT,callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y,0,base)}`}}},
+        scales:{x:{grid:{color:GRID},ticks:{color:LIGHT,font:{size:10},maxTicksLimit:12}},
+                y:{position:'right',grid:{color:GRID},ticks:{color:LIGHT,font:{size:10},callback:absK}}}}
+    });
+    const diff=s.final-b.final;
+    $('sim-diff').innerHTML=`At ${y0+years}: simulated <strong style="color:#e0e0e0">${this.money(s.final)}</strong> vs baseline ${this.money(b.final)} — <span class="${diff>=0?'pos':'neg'}" style="font-weight:600">${(diff>=0?'+':'')+this.money(diff)}</span>`;
+    const cagr=(f,inc)=>inc>0?(Math.pow(f/inc,1/years)-1)*100:0;
+    const bC=cagr(b.final,b.V0),sC=cagr(s.final,s.totalIn);
+    const box=(l,v,sub)=>`<div class="pm-box"><div class="pm-l">${l}</div><div class="pm-v">${v}</div><div style="font-size:11px;color:var(--sub);font-family:var(--mono);margin-top:3px">${sub}</div></div>`;
+    $('sim-stats').innerHTML=[
+      box('Final Value',this.money(s.final),`baseline ${this.money(b.final)}`),
+      box('Net Dividends',this.money(s.totalNetDiv),`after withholding tax`),
+      box('Total Fees',this.money(s.txnFee+s.totalTer),`TER ${this.money(s.totalTer)} · txn ${this.money(s.txnFee)}`),
+      box('CAGR',`<span class="${sC>=0?'pos':'neg'}">${fPct(sC)}</span>`,`baseline ${fPct(bC)}`),
+    ].join('');
+  },
+  async _loadCagr(){
+    const syms=this.symbols();if(!syms.length)return;
+    if(!syms.some(s=>!Hist.entry(s,'all')))return;   // already have history for every symbol
+    await Hist.ensure(syms,'all');
+    this.run();
+  }
+};
+
 // ── app controller ───────────────────────────────────────────
-const TITLES={dashboard:'Dashboard',holdings:'Holdings',backtest:'Backtest',projections:'Projections',transactions:'Transactions',dividends:'Dividends',funny:'Funny Stats',settings:'Settings'};
+const TITLES={dashboard:'Dashboard',holdings:'Holdings',backtest:'Backtest',projections:'Projections',transactions:'Transactions',dividends:'Dividends',funny:'Funny Stats',domani:'E domani?',settings:'Settings'};
 const App = {
   editId:null, txType:'buy', pxSym:null,
   selSym:null, selName:'', selCcy:'', pxManual:false, _results:[], _sT:null,
@@ -1425,6 +1707,7 @@ const App = {
       if(t==='dividends')UI.divs();
       if(t==='costs')Costs.render();
       if(t==='funny')Funny.render();
+      if(t==='domani')Sim.render();
       if(t==='backtest'&&!BT2._booted){BT2.boot();BT2._booted=true;}
       if(t==='projections')Proj.render();
     }));
@@ -1743,7 +2026,7 @@ const App = {
     else Px.setS('ok','No holdings');
     $('refresh-btn').textContent='Refresh';
   },
-  refresh(){UI.holdings();const p=document.querySelector('.panel.on');if(p?.id==='tab-transactions')UI.txs();if(p?.id==='tab-dividends')UI.divs();if(p?.id==='tab-projections')Proj.render();if(p?.id==='tab-costs')Costs.render();if(p?.id==='tab-funny')Funny.render();}
+  refresh(){UI.holdings();const p=document.querySelector('.panel.on');if(p?.id==='tab-transactions')UI.txs();if(p?.id==='tab-dividends')UI.divs();if(p?.id==='tab-projections')Proj.render();if(p?.id==='tab-costs')Costs.render();if(p?.id==='tab-funny')Funny.render();if(p?.id==='tab-domani')Sim.render();}
 };
 
 // ── data management ──────────────────────────────────────────
