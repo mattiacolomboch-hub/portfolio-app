@@ -26,7 +26,8 @@ button,input,select{font-family:inherit}
 .brand-tag{font-size:8.5px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--sub)}
 .nav{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
-.nav-item{background:none;border:none;border-bottom:2px solid transparent;padding:8px 14px;font-size:13px;color:var(--sub);cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap}
+.nav-item{display:inline-flex;align-items:center;gap:7px;background:none;border:none;border-bottom:2px solid transparent;padding:8px 13px;font-size:13px;color:var(--sub);cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
 .nav-item:hover{color:var(--text)}
 .nav-item.on{color:#fff;border-bottom-color:var(--accent);font-weight:500}
 .nav-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
@@ -348,8 +349,10 @@ input[type=number]{-moz-appearance:textfield}
   .vtl-card::before,.vtl-item.rev .vtl-card::before{display:none}
 }
 /* ── About ── */
-.about{max-width:840px}
+.about{max-width:800px;margin:0 auto}
 .ab-sec{padding:2px 0}
+.ab-ic{color:var(--accent);line-height:0;margin-bottom:12px}
+.ab-ic svg{width:32px;height:32px}
 .ab-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin-bottom:9px}
 .ab-h{font-size:24px;font-weight:700;color:var(--text);letter-spacing:-.01em;margin-bottom:16px;line-height:1.2}
 .ab-p{font-size:14px;line-height:1.8;color:var(--body);margin-bottom:16px;max-width:720px}
@@ -392,18 +395,18 @@ input[type=number]{-moz-appearance:textfield}
 <header class="topnav">
   <div class="brand"><span class="brand-name">CLMB Tracker</span><span class="brand-tag">Portfolio Intelligence</span></div>
   <nav class="nav">
-    <button class="nav-item on" data-tab="dashboard">Dashboard</button>
-    <button class="nav-item" data-tab="holdings">Holdings</button>
-    <button class="nav-item" data-tab="backtest">Backtest</button>
-    <button class="nav-item" data-tab="projections">Projections</button>
-    <button class="nav-item" data-tab="transactions">Transactions</button>
-    <button class="nav-item" data-tab="dividends">Dividends</button>
-    <button class="nav-item" data-tab="costs">Costs</button>
-    <button class="nav-item" data-tab="funny">Funny Stats</button>
-    <button class="nav-item" data-tab="domani">E domani?</button>
-    <button class="nav-item" data-tab="roadmap">Roadmap</button>
-    <button class="nav-item" data-tab="settings">Settings</button>
-    <button class="nav-item" data-tab="about">About</button>
+    <button class="nav-item on" data-tab="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Dashboard</button>
+    <button class="nav-item" data-tab="holdings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="12" x2="12" y2="3"/><line x1="12" y1="12" x2="19.8" y2="16.5"/></svg>Holdings</button>
+    <button class="nav-item" data-tab="backtest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 4 3 8 7 8"/><polyline points="12 8 12 12 15 14"/></svg>Backtest</button>
+    <button class="nav-item" data-tab="projections"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 15 9 10 13 13 20 6"/><polyline points="15 6 20 6 20 11"/></svg>Projections</button>
+    <button class="nav-item" data-tab="transactions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="7" x2="20" y2="7"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="17" x2="20" y2="17"/><circle cx="4.5" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="17" r="1" fill="currentColor" stroke="none"/></svg>Transactions</button>
+    <button class="nav-item" data-tab="dividends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.3c-.5-.9-1.4-1.3-2.5-1.3-1.4 0-2.5.8-2.5 2s1.1 1.7 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1.1 0-2-.4-2.5-1.3"/><line x1="12" y1="6.3" x2="12" y2="17.7"/></svg>Dividends</button>
+    <button class="nav-item" data-tab="costs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><line x1="8.5" y1="12" x2="15.5" y2="12"/></svg>Costs</button>
+    <button class="nav-item" data-tab="funny"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><line x1="9" y1="9.5" x2="9.01" y2="9.5"/><line x1="15" y1="9.5" x2="15.01" y2="9.5"/></svg>Funny Stats</button>
+    <button class="nav-item" data-tab="domani"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10.5" r="7"/><path d="M8 20h8"/><path d="M9.8 8.9a2.3 2.3 0 1 1 3 2.2c-.7.3-1.1.8-1.1 1.6"/><line x1="11.7" y1="15.2" x2="11.71" y2="15.2"/></svg>E domani?</button>
+    <button class="nav-item" data-tab="roadmap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c4-4 7-7.4 7-11a7 7 0 1 0-14 0c0 3.6 3 7 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Roadmap</button>
+    <button class="nav-item" data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/></svg>Settings</button>
+    <button class="nav-item" data-tab="about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>About</button>
   </nav>
   <div class="nav-actions">
     <div class="status"><span class="sdot" id="sdot"></span><span id="stxt">Ready</span></div>
@@ -884,19 +887,23 @@ input[type=number]{-moz-appearance:textfield}
         <h2 class="ab-h">How data works</h2>
         <div class="ab-grid">
           <div class="ab-item">
-            <div class="ab-item-h"><span>📡</span> Live Prices</div>
+            <div class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 12.8a5 5 0 0 1 7 0"/><path d="M6 10.3a8.5 8.5 0 0 1 12 0"/><path d="M11 15.4a2 2 0 0 1 2 0"/><circle cx="12" cy="18" r="1" fill="currentColor" stroke="none"/></svg></div>
+            <div class="ab-item-h">Live Prices</div>
             <p>Source: Yahoo Finance via a Cloudflare Worker proxy. Prices refresh every 5 minutes. Data may be delayed 15–20 minutes depending on the exchange.</p>
           </div>
           <div class="ab-item">
-            <div class="ab-item-h"><span>📊</span> Historical Prices</div>
+            <div class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="20" y2="20"/><line x1="7" y1="20" x2="7" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="17" y1="20" x2="17" y2="5"/></svg></div>
+            <div class="ab-item-h">Historical Prices</div>
             <p>Source: Yahoo Finance historical data (v8 API). Used for performance charts and backtest. Data goes back 20+ years for major indices. European ETFs may have shorter history.</p>
           </div>
           <div class="ab-item">
-            <div class="ab-item-h"><span>💱</span> Exchange Rates</div>
+            <div class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><polyline points="20 4 20 8.5 15.5 8.5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><polyline points="4 20 4 15.5 8.5 15.5"/></svg></div>
+            <div class="ab-item-h">Exchange Rates</div>
             <p>Source: Yahoo Finance FX rates (USD/CHF, EUR/CHF). Updated with each price refresh.</p>
           </div>
           <div class="ab-item">
-            <div class="ab-item-h"><span>💾</span> Your Data</div>
+            <div class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+            <div class="ab-item-h">Your Data</div>
             <p>Your portfolio data is stored exclusively in your browser's localStorage. It is never uploaded, never shared, never seen by anyone. Use the Export function regularly as a backup.</p>
           </div>
         </div>
@@ -905,6 +912,7 @@ input[type=number]{-moz-appearance:textfield}
       <div class="ab-div"></div>
 
       <section class="ab-sec">
+        <div class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 2.8v5.4c0 4.4-3 7.4-7 8.8-4-1.4-7-4.4-7-8.8V5.8z"/><polyline points="9 12 11.2 14.2 15 9.8"/></svg></div>
         <div class="ab-eyebrow">A word on accuracy</div>
         <h2 class="ab-h">Honest about precision</h2>
         <p class="ab-p">Yahoo Finance is accurate enough for portfolio tracking at any reasonable scale. Small discrepancies (0.1–0.5%) may exist due to FX timing or delayed prices. For portfolios under CHF 1,000,000 these differences are negligible. When the user base reaches 100+ users, the app will migrate to EOD Historical Data — a professional paid provider with full European exchange coverage. This upgrade will remain free for all users.</p>
