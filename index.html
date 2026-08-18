@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portfolio</title>
+<title>CLMB Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
@@ -21,7 +21,9 @@ button,input,select{font-family:inherit}
 
 /* ── Top nav ── */
 .topnav{display:flex;align-items:center;gap:28px;padding:0 28px;height:60px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50;flex-wrap:wrap}
-.brand{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text);white-space:nowrap}
+.brand{display:flex;flex-direction:column;gap:1px;white-space:nowrap;line-height:1.15}
+.brand-name{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text)}
+.brand-tag{font-size:8.5px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--sub)}
 .nav{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
 .nav-item{background:none;border:none;border-bottom:2px solid transparent;padding:8px 14px;font-size:13px;color:var(--sub);cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap}
@@ -283,17 +285,75 @@ input[type=number]{-moz-appearance:textfield}
 .sim-diff{font-size:12px;color:var(--sub);margin:10px 0 2px;font-family:var(--mono)}
 .sim-disc{font-size:10px;color:var(--dim);border-top:1px solid var(--border);margin-top:16px;padding-top:10px;line-height:1.5}
 .sim-mini-ac{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);max-height:220px;overflow-y:auto;z-index:20;display:none}
-/* ── Roadmap ── */
-.rm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
-@media(max-width:1000px){.rm-grid{grid-template-columns:1fr}}
-.rm-item{display:flex;gap:11px;padding:12px 0;border-top:1px solid var(--border)}
-.rm-item:first-of-type{border-top:none;padding-top:2px}
-.rm-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0;background:var(--dim)}
-.rm-dot.done{background:var(--green)}
-.rm-dot.prog{background:var(--accent)}
-.rm-dot.plan{background:transparent;border:1px solid var(--border2)}
-.rm-t{font-size:13px;color:var(--text);font-weight:600}
-.rm-d{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
+/* ── Roadmap timeline ── */
+.rm-legend{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:6px}
+.rm-lg{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--sub)}
+.rm-lg i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.rm-lg i.done{background:var(--green)}.rm-lg i.prog{background:var(--accent)}.rm-lg i.soon{background:#444}
+.tl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 0}
+.tl-scroll::-webkit-scrollbar{height:8px}.tl-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.tl-track{display:flex;min-width:min-content}
+.tl-item{position:relative;flex:0 0 212px;height:360px}
+.tl-item::before{content:'';position:absolute;top:50%;left:0;width:100%;border-top:2px solid var(--border2);transform:translateY(-1px);z-index:0}
+.tl-item.prog::before{border-top-style:dashed;border-top-color:rgba(41,98,255,.55)}
+.tl-item.soon::before{border-top-style:dashed;border-top-color:#444}
+.tl-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;z-index:3;border:3px solid var(--bg);box-sizing:content-box}
+.tl-item.done .tl-dot{background:var(--green)}
+.tl-item.prog .tl-dot{background:var(--accent);animation:tlPulse 1.8s infinite}
+.tl-item.soon .tl-dot{background:#444}
+.tl-card{position:absolute;left:50%;transform:translateX(-50%);width:188px;border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;background:var(--bg)}
+.tl-item.up .tl-card{bottom:50%;margin-bottom:28px}
+.tl-item.down .tl-card{top:50%;margin-top:28px}
+.tl-card::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:1px;height:28px;background:var(--border2)}
+.tl-item.up .tl-card::after{top:100%}
+.tl-item.down .tl-card::after{bottom:100%}
+.tl-date{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.tl-item.done .tl-date{color:var(--green)}
+.tl-item.prog .tl-date{color:var(--accent)}
+.tl-item.soon .tl-date{color:var(--sub)}
+.tl-title{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3}
+.tl-desc{font-size:11px;color:var(--sub);margin-top:4px;line-height:1.45}
+@keyframes tlPulse{0%{box-shadow:0 0 0 0 rgba(41,98,255,.5)}70%{box-shadow:0 0 0 9px rgba(41,98,255,0)}100%{box-shadow:0 0 0 0 rgba(41,98,255,0)}}
+.rm-table td{font-family:inherit;font-size:12px;color:var(--body);vertical-align:top;line-height:1.5}
+.rm-table td:first-child{color:var(--text);font-weight:600}
+.rm-table td:last-child{white-space:nowrap}
+.rm-note{font-size:11px;color:var(--dim);margin-top:20px;text-align:center}
+/* vertical timeline on phones */
+@media(max-width:820px){
+  .tl-scroll{overflow-x:visible}
+  .tl-track{flex-direction:column;min-width:0}
+  .tl-item{flex:none;width:100%;height:auto;padding:0 0 24px 32px}
+  .tl-item::before{top:0;left:14px;width:0;height:100%;border-top:none;border-left:2px solid var(--border2);transform:none}
+  .tl-item.prog::before{border-left-style:dashed;border-left-color:rgba(41,98,255,.55);border-top:none}
+  .tl-item.soon::before{border-left-style:dashed;border-left-color:#444;border-top:none}
+  .tl-dot{top:5px;left:14px;transform:translate(-50%,0)}
+  .tl-card{position:static;transform:none;width:auto;margin:0!important}
+  .tl-card::after{display:none}
+}
+/* ── About ── */
+.about{max-width:840px}
+.ab-sec{padding:2px 0}
+.ab-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin-bottom:9px}
+.ab-h{font-size:24px;font-weight:700;color:var(--text);letter-spacing:-.01em;margin-bottom:16px;line-height:1.2}
+.ab-p{font-size:14px;line-height:1.8;color:var(--body);margin-bottom:16px;max-width:720px}
+.ab-div{height:1px;background:var(--border);margin:32px 0}
+.ab-team{border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-top:8px;border-left:2px solid var(--accent)}
+.ab-team-t{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
+.ab-team-d{font-size:12.5px;color:var(--sub);line-height:1.65}
+.ab-team-d a,.ab-p a{color:var(--accent);text-decoration:none}
+.ab-team-d a:hover,.ab-p a:hover{text-decoration:underline}
+.ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+@media(max-width:720px){.ab-grid{grid-template-columns:1fr}}
+.ab-item{border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.ab-item-h{font-size:14px;font-weight:600;color:var(--text);margin-bottom:9px;display:flex;align-items:center;gap:9px}
+.ab-item p{font-size:12.5px;line-height:1.7;color:var(--body)}
+.ab-cmp{width:100%;border-collapse:collapse;margin-top:8px}
+.ab-cmp th,.ab-cmp td{text-align:left;padding:12px 12px;font-size:12.5px;font-family:inherit;vertical-align:middle}
+.ab-cmp thead th{color:var(--sub);text-transform:uppercase;letter-spacing:.1em;font-size:10px;border-bottom:1px solid var(--border2)}
+.ab-cmp tbody td{border-bottom:1px solid var(--border);color:var(--body)}
+.ab-cmp tbody td:first-child{color:var(--text);font-weight:600}
+.ab-cmp tbody tr:last-child td{border-bottom:none}
+.ab-disc{font-size:11.5px;color:var(--dim);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-top:28px;line-height:1.65}
 
 /* ── Responsive ── */
 @media(max-width:1100px){.chips{grid-template-columns:repeat(2,1fr)}.chart-row{grid-template-columns:1fr}}
@@ -313,7 +373,7 @@ input[type=number]{-moz-appearance:textfield}
 
 <!-- ══ TOP NAV ══ -->
 <header class="topnav">
-  <div class="brand">Portfolio</div>
+  <div class="brand"><span class="brand-name">CLMB Tracker</span><span class="brand-tag">Portfolio Intelligence</span></div>
   <nav class="nav">
     <button class="nav-item on" data-tab="dashboard">Dashboard</button>
     <button class="nav-item" data-tab="holdings">Holdings</button>
@@ -326,6 +386,7 @@ input[type=number]{-moz-appearance:textfield}
     <button class="nav-item" data-tab="domani">E domani?</button>
     <button class="nav-item" data-tab="roadmap">Roadmap</button>
     <button class="nav-item" data-tab="settings">Settings</button>
+    <button class="nav-item" data-tab="about">About</button>
   </nav>
   <div class="nav-actions">
     <div class="status"><span class="sdot" id="sdot"></span><span id="stxt">Ready</span></div>
@@ -671,29 +732,50 @@ input[type=number]{-moz-appearance:textfield}
   <!-- ROADMAP -->
   <div class="panel" id="tab-roadmap">
     <div class="card-title" style="font-size:15px;color:var(--text);text-transform:none;letter-spacing:0;margin-bottom:2px">Roadmap</div>
-    <div style="font-size:12px;color:var(--sub);margin-bottom:20px">What's shipped and what's coming next.</div>
-    <div class="rm-grid">
-      <div class="card">
-        <div class="card-title">Shipped</div>
-        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">Live prices &amp; FX</div><div class="rm-d">Yahoo Finance quotes with USD/EUR/CHF conversion.</div></div></div>
-        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">Historical performance chart</div><div class="rm-d">Real daily closes, time filters, transaction markers.</div></div></div>
-        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">Funny Stats</div><div class="rm-d">Investing-habit metrics with year-over-year comparison.</div></div></div>
-        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">"E domani?" simulator</div><div class="rm-d">Sandbox projections for hypothetical buys, sells &amp; plans.</div></div></div>
-        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">TradingView-style redesign</div><div class="rm-d">Pure-black theme, DM Sans, bold metrics.</div></div></div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:18px">The journey so far and where we're heading.</div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="rm-legend">
+        <span class="rm-lg"><i class="done"></i> Completed</span>
+        <span class="rm-lg"><i class="prog"></i> In Progress</span>
+        <span class="rm-lg"><i class="soon"></i> Coming Soon</span>
       </div>
-      <div class="card">
-        <div class="card-title">In Progress</div>
-        <div class="rm-item"><span class="rm-dot prog"></span><div><div class="rm-t">Dividend yield auto-fetch</div><div class="rm-d">Pull real trailing yields into the simulator assumptions.</div></div></div>
-        <div class="rm-item"><span class="rm-dot prog"></span><div><div class="rm-t">Mobile layout polish</div><div class="rm-d">Denser cards and scrollable nav on small screens.</div></div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Planned</div>
-        <div class="rm-item"><span class="rm-dot plan"></span><div><div class="rm-t">Price &amp; allocation alerts</div><div class="rm-d">Notify when a holding drifts past a target weight.</div></div></div>
-        <div class="rm-item"><span class="rm-dot plan"></span><div><div class="rm-t">Multi-portfolio support</div><div class="rm-d">Track separate accounts and combine them.</div></div></div>
-        <div class="rm-item"><span class="rm-dot plan"></span><div><div class="rm-t">Tax report export</div><div class="rm-d">Realised gains &amp; dividend summaries per year.</div></div></div>
-        <div class="rm-item"><span class="rm-dot plan"></span><div><div class="rm-t">Saved simulation scenarios</div><div class="rm-d">Name and revisit "E domani?" what-ifs.</div></div></div>
+      <div class="tl-scroll">
+        <div class="tl-track">
+          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Jul 1, 2026</div><div class="tl-title">Portfolio Tracker live</div><div class="tl-desc">Live prices, multi-currency, holdings table.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item done down"><div class="tl-card"><div class="tl-date">Jul 5, 2026</div><div class="tl-title">Transaction Management</div><div class="tl-desc">Buy/sell/dividend tracking, Degiro CSV import.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Jul 10, 2026</div><div class="tl-title">Performance Charts</div><div class="tl-desc">Historical price chart with time filters.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item done down"><div class="tl-card"><div class="tl-date">Jul 15, 2026</div><div class="tl-title">Backtest Engine</div><div class="tl-desc">Compare portfolio allocations with real historical data.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Jul 20, 2026</div><div class="tl-title">Projections</div><div class="tl-desc">Year-by-year capital growth simulator.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item done down"><div class="tl-card"><div class="tl-date">Jul 25, 2026</div><div class="tl-title">Costs Tracker</div><div class="tl-desc">TER, transaction fees, cost drag on returns.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Aug 1, 2026</div><div class="tl-title">Funny Stats &amp; Roadmap</div><div class="tl-desc">Investing habit analytics.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item done down"><div class="tl-card"><div class="tl-date">Aug 10, 2026</div><div class="tl-title">"E domani?" Simulator</div><div class="tl-desc">Sandbox for hypothetical portfolio changes.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Aug 18, 2026</div><div class="tl-title">TradingView-inspired redesign</div><div class="tl-desc">DM Sans, pure black, new color system.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item prog down"><div class="tl-card"><div class="tl-date">Q3 2026</div><div class="tl-title">Historical chart fix</div><div class="tl-desc">Real daily price data for all holdings.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item prog up"><div class="tl-card"><div class="tl-date">Q3 2026</div><div class="tl-title">Mobile optimization</div><div class="tl-desc">Full responsive layout for phone use.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item soon down"><div class="tl-card"><div class="tl-date">Q4 2026</div><div class="tl-title">More broker imports</div><div class="tl-desc">Interactive Brokers, Swissquote, Revolut.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item soon up"><div class="tl-card"><div class="tl-date">Q4 2026</div><div class="tl-title">Price alerts</div><div class="tl-desc">Notify when asset hits target price.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item soon down"><div class="tl-card"><div class="tl-date">Q1 2027</div><div class="tl-title">AI Portfolio Analysis</div><div class="tl-desc">Automated insights on risk, correlation, rebalancing suggestions.</div></div><span class="tl-dot"></span></div>
+          <div class="tl-item soon up"><div class="tl-card"><div class="tl-date">Q2 2027</div><div class="tl-title">Swiss Tax Report</div><div class="tl-desc">Export capital gains and dividend report for Swiss tax declaration.</div></div><span class="tl-dot"></span></div>
+        </div>
       </div>
     </div>
+    <div class="card">
+      <div class="card-title">Long Term Objectives</div>
+      <div class="tbl-wrap">
+        <table class="rm-table">
+          <thead><tr><th>Objective</th><th>Trigger</th><th>Impact</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Premium Data (EOD Historical Data)</td><td>100+ active users</td><td>More precise prices, full European ETF coverage, longer history</td><td>🎯 Planned</td></tr>
+            <tr><td>Social Portfolio Network</td><td>250+ users</td><td>Share and compare portfolios with friends, leaderboards, anonymous public profiles</td><td>🎯 Planned</td></tr>
+            <tr><td>Fundamental Analysis</td><td>500+ users</td><td>P/E, DCF valuation, balance sheet analysis, undervalued stock screener</td><td>🎯 Planned</td></tr>
+            <tr><td>Real-time Alerts &amp; Notifications</td><td>Any stage</td><td>Push notifications for price targets, dividend payments, earnings dates</td><td>🎯 Planned</td></tr>
+            <tr><td>Multi-user Accounts</td><td>100+ users</td><td>Cloud sync, login system, portfolio accessible from any device</td><td>🎯 Planned</td></tr>
+            <tr><td>Mobile App (iOS/Android)</td><td>1000+ users</td><td>Native app with biometric login, widgets, push notifications</td><td>🚀 Dream</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="rm-note">This roadmap is updated as the project evolves. Have a feature request? DM us.</div>
   </div>
 
   <!-- SETTINGS -->
@@ -753,6 +835,66 @@ input[type=number]{-moz-appearance:textfield}
           <button class="btn btn-d btn-sm" onclick="Data.clear()">Clear All</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="panel" id="tab-about">
+    <div class="about">
+      <section class="ab-sec">
+        <div class="ab-eyebrow">Who we are</div>
+        <h2 class="ab-h">Built out of necessity</h2>
+        <p class="ab-p">This app was built by a finance student who couldn't find a free, private, European-friendly portfolio tracker. No ads, no account required, no data ever leaves your device. Everything runs in your browser.</p>
+        <div class="ab-team">
+          <div class="ab-team-t">Built by Mattia Colombo</div>
+          <div class="ab-team-d">Master in Finance, HEC Lausanne. Feedback? DM us on Instagram <a href="https://instagram.com/clmb.project" target="_blank" rel="noopener">@clmb.project</a></div>
+        </div>
+      </section>
+
+      <div class="ab-div"></div>
+
+      <section class="ab-sec">
+        <div class="ab-eyebrow">Transparency</div>
+        <h2 class="ab-h">How data works</h2>
+        <div class="ab-grid">
+          <div class="ab-item">
+            <div class="ab-item-h"><span>📡</span> Live Prices</div>
+            <p>Source: Yahoo Finance via a Cloudflare Worker proxy. Prices refresh every 5 minutes. Data may be delayed 15–20 minutes depending on the exchange.</p>
+          </div>
+          <div class="ab-item">
+            <div class="ab-item-h"><span>📊</span> Historical Prices</div>
+            <p>Source: Yahoo Finance historical data (v8 API). Used for performance charts and backtest. Data goes back 20+ years for major indices. European ETFs may have shorter history.</p>
+          </div>
+          <div class="ab-item">
+            <div class="ab-item-h"><span>💱</span> Exchange Rates</div>
+            <p>Source: Yahoo Finance FX rates (USD/CHF, EUR/CHF). Updated with each price refresh.</p>
+          </div>
+          <div class="ab-item">
+            <div class="ab-item-h"><span>💾</span> Your Data</div>
+            <p>Your portfolio data is stored exclusively in your browser's localStorage. It is never uploaded, never shared, never seen by anyone. Use the Export function regularly as a backup.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="ab-div"></div>
+
+      <section class="ab-sec">
+        <div class="ab-eyebrow">A word on accuracy</div>
+        <h2 class="ab-h">Honest about precision</h2>
+        <p class="ab-p">Yahoo Finance is accurate enough for portfolio tracking at any reasonable scale. Small discrepancies (0.1–0.5%) may exist due to FX timing or delayed prices. For portfolios under CHF 1,000,000 these differences are negligible. When the user base reaches 100+ users, the app will migrate to EOD Historical Data — a professional paid provider with full European exchange coverage. This upgrade will remain free for all users.</p>
+        <table class="ab-cmp">
+          <thead><tr><th>Feature</th><th>Now (Yahoo Finance)</th><th>Future (EOD Historical Data)</th></tr></thead>
+          <tbody>
+            <tr><td>Price accuracy</td><td>✅ Good</td><td>✅✅ Excellent</td></tr>
+            <tr><td>European ETFs</td><td>⚠️ Most covered</td><td>✅ Full coverage</td></tr>
+            <tr><td>Historical depth</td><td>✅ 20+ years</td><td>✅ 30+ years</td></tr>
+            <tr><td>Dividend data</td><td>⚠️ Partial</td><td>✅ Complete</td></tr>
+            <tr><td>Cost to users</td><td>Free</td><td>Free (paid by us)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="ab-disc">CLMB Tracker is for informational purposes only and does not constitute financial advice.</div>
     </div>
   </div>
   </main><!-- /content -->
@@ -1733,7 +1875,7 @@ const Sim = {
 };
 
 // ── app controller ───────────────────────────────────────────
-const TITLES={dashboard:'Dashboard',holdings:'Holdings',backtest:'Backtest',projections:'Projections',transactions:'Transactions',dividends:'Dividends',funny:'Funny Stats',domani:'E domani?',roadmap:'Roadmap',settings:'Settings'};
+const TITLES={dashboard:'Dashboard',holdings:'Holdings',backtest:'Backtest',projections:'Projections',transactions:'Transactions',dividends:'Dividends',funny:'Funny Stats',domani:'E domani?',roadmap:'Roadmap',settings:'Settings',about:'About'};
 const App = {
   editId:null, txType:'buy', pxSym:null,
   selSym:null, selName:'', selCcy:'', pxManual:false, _results:[], _sT:null,
