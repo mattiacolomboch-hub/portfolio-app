@@ -241,6 +241,20 @@ input[type=number]{-moz-appearance:textfield}
 .proj-metrics4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 @media(max-width:1000px){.proj-metrics4{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.proj-metrics4{grid-template-columns:1fr}}
+/* ── custom chart legend (line swatch + checkbox) ── */
+.chart-legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.cl-item{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11.5px;color:#e0e0e0;user-select:none}
+.cl-item.off{opacity:.45}
+.cl-item input{accent-color:var(--accent);width:13px;height:13px;cursor:pointer;margin:0}
+.cl-line{width:20px;height:0;border-top-width:3px;border-top-style:solid;border-radius:2px;flex-shrink:0}
+/* ── funny stats grid ── */
+.fstat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:1000px){.fstat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.fstat-grid{grid-template-columns:1fr}}
+.fstat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.fstat .fl{font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--sub);margin-bottom:0}
+.fstat .fv{font-size:20px;font-weight:600;margin-top:9px;color:#e0e0e0;font-family:var(--mono);line-height:1.25;word-break:break-word}
+.fstat .fs{font-size:11px;margin-top:6px;font-family:var(--mono);color:var(--sub)}
 
 /* ── Responsive ── */
 @media(max-width:1100px){.chips{grid-template-columns:repeat(2,1fr)}.chart-row{grid-template-columns:1fr}}
@@ -269,6 +283,7 @@ input[type=number]{-moz-appearance:textfield}
     <button class="nav-item" data-tab="transactions">Transactions</button>
     <button class="nav-item" data-tab="dividends">Dividends</button>
     <button class="nav-item" data-tab="costs">Costs</button>
+    <button class="nav-item" data-tab="funny">Funny Stats</button>
     <button class="nav-item" data-tab="settings">Settings</button>
   </nav>
   <div class="nav-actions">
@@ -304,16 +319,13 @@ input[type=number]{-moz-appearance:textfield}
           </div>
         </div>
         <div class="chart-wrap" style="height:260px"><canvas id="c-perf"></canvas><div id="perf-loading" class="chart-loading" style="display:none"><span class="spin"></span><span id="perf-loading-t">Loading prices…</span></div></div>
+        <div class="chart-legend" id="perf-legend"></div>
       </div>
       <div class="card">
         <div class="card-title">Allocation</div>
         <div class="chart-wrap" style="height:200px"><canvas id="c-alloc"></canvas></div>
         <div class="a-legend" id="a-leg"></div>
       </div>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <div class="card-title">Capital Invested</div>
-      <div class="chart-wrap" style="height:170px"><canvas id="c-invested"></canvas></div>
     </div>
   </div>
 
@@ -440,6 +452,12 @@ input[type=number]{-moz-appearance:textfield}
         </table>
       </div>
     </div>
+  </div>
+
+  <!-- FUNNY STATS -->
+  <div class="panel" id="tab-funny">
+    <div class="card-title" style="font-size:15px;color:var(--text);margin-bottom:18px;text-transform:none;letter-spacing:0">Your Investing Habits</div>
+    <div class="fstat-grid" id="funny-grid"></div>
   </div>
 
   <!-- BACKTEST -->
@@ -1048,10 +1066,10 @@ const Hist = {
 
 // ── charts ───────────────────────────────────────────────────
 const COLORS=['#22c55e','#3b82f6','#a855f7','#f59e0b','#06b6d4','#ec4899','#84cc16','#f97316','#14b8a6','#8b5cf6','#eab308','#f43f5e'];
-const GRID='#1e1e1e', TICK='#666666';
+const GRID='#1e1e1e', TICK='#666666', LIGHT='#e0e0e0';
 const TT={backgroundColor:'#141414',borderColor:'#2a2a2a',borderWidth:1,titleColor:'#f0f0f0',bodyColor:'#888888',padding:8,cornerRadius:2};
 const Charts = {
-  _p:null,_i:null,_a:null,_db:null,_dp:null,_range:'all',_perfBusy:false,
+  _p:null,_a:null,_db:null,_dp:null,_range:'all',_perfBusy:false,
   setRange(r){this._range=r;document.querySelectorAll('#perf-pills .pill').forEach(b=>b.classList.toggle('on',b.dataset.r===r));this.perf();},
   chartOpts(base){
     return{
@@ -1063,7 +1081,7 @@ const Charts = {
   async perf(){
     const base=Cfg.get().cur, txs=S.txs();
     const syms=[...new Set(txs.filter(t=>t.type!=='dividend').map(t=>t.symbol))];   // every symbol ever traded
-    if(!syms.length){ if(this._p){this._p.destroy();this._p=null;} if(this._i){this._i.destroy();this._i=null;} return; }
+    if(!syms.length){ if(this._p){this._p.destroy();this._p=null;} const lg=$('perf-legend'); if(lg)lg.innerHTML=''; return; }
     this._renderPerf(base,txs);                            // draw immediately with cached data
     if(this._perfBusy)return;
     const rk=this._range||'all';
@@ -1080,7 +1098,7 @@ const Charts = {
   },
   _renderPerf(base,txs){
     const nd=txs.filter(t=>t.type!=='dividend');
-    if(!nd.length){ if(this._p){this._p.destroy();this._p=null;} if(this._i){this._i.destroy();this._i=null;} return; }
+    if(!nd.length){ if(this._p){this._p.destroy();this._p=null;} const lg=$('perf-legend'); if(lg)lg.innerHTML=''; return; }
     const today=new Date(), todayStr=today.toISOString().slice(0,10);
     const earliest=nd.map(t=>t.date).sort()[0];
     const rk=this._range||'all';
@@ -1140,8 +1158,11 @@ const Charts = {
     const txLine=t=>`${t.type==='buy'?'Buy':'Sell'} ${(+t.qty).toFixed(2)} ${Assets.name(t.symbol)||t.symbol} @ ${fmt(t.price,2,t.ccy)} = ${fmt(t.qty*t.price+(t.fees||0),2,t.ccy)}`;
     const opts=this.chartOpts(base);
     opts.interaction={intersect:false,mode:'index'};
+    opts.plugins.legend.display=false;                       // replaced by custom HTML legend with checkboxes
+    opts.scales.y.position='right';                          // y-axis labels on the right
+    opts.scales.y.ticks.color=LIGHT; opts.scales.x.ticks.color=LIGHT;   // clearly visible axis text
     opts.scales.y2={display:false,min:-0.05,max:1};
-    opts.plugins.legend.labels.filter=it=>it.text!=='Transactions';
+    opts.plugins.tooltip={...opts.plugins.tooltip,titleColor:LIGHT,bodyColor:LIGHT};
     opts.plugins.tooltip.callbacks={label:c=>{
       if(c.dataset._marker){const arr=markerTx[c.dataIndex]||[];return arr.map(txLine);}
       return ` ${c.dataset.label}: ${fmt(c.parsed.y,2,base)}`;
@@ -1154,27 +1175,27 @@ const Charts = {
     this._p=new Chart($('c-perf').getContext('2d'),{
       type:'line',
       data:{labels,datasets:[
-        {label:'Value',data:vals,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.05)',fill:true,tension:.35,pointRadius:0,pointHoverRadius:4,borderWidth:2},
-        {label:'Invested',data:costs,borderColor:'#666666',backgroundColor:'transparent',borderDash:[4,4],tension:.35,pointRadius:0,pointHoverRadius:0,borderWidth:1.5},
+        {label:'Portfolio Value',data:vals,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.05)',fill:true,tension:.35,pointRadius:0,pointHoverRadius:4,borderWidth:2},
+        {label:'Capital Invested',data:costs,borderColor:'#9aa0a6',backgroundColor:'transparent',borderDash:[5,4],tension:.35,pointRadius:0,pointHoverRadius:0,borderWidth:1.5},
         {label:'Transactions',_marker:true,data:markerY,yAxisID:'y2',showLine:false,pointStyle:'triangle',pointRadius:6,pointHoverRadius:8,pointRotation:180,backgroundColor:'#ef4444',borderColor:'#ef4444'}
       ]},
       options:opts
     });
-    this._renderInvested(base,labels,costs);
+    this._renderLegend();
   },
-  _renderInvested(base,labels,costs){
-    if(this._i)this._i.destroy();
-    const el=$('c-invested'); if(!el)return;
-    const opts=this.chartOpts(base);
-    opts.interaction={intersect:false,mode:'index'};
-    opts.plugins.legend.display=false;
-    opts.plugins.tooltip.callbacks={label:c=>` Invested: ${fmt(c.parsed.y,2,base)}`};
-    this._i=new Chart(el.getContext('2d'),{
-      type:'line',
-      data:{labels,datasets:[
-        {label:'Capital Invested',data:costs,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',fill:true,stepped:'before',pointRadius:0,pointHoverRadius:4,borderWidth:2}
-      ]},
-      options:opts
+  _renderLegend(){   // custom legend: line swatch + checkbox; skips the Transactions marker dataset
+    const box=$('perf-legend'); if(!box||!this._p)return;
+    const ds=this._p.data.datasets;
+    box.innerHTML='';
+    ds.forEach((d,i)=>{
+      if(d._marker)return;
+      const vis=this._p.isDatasetVisible(i);
+      const item=document.createElement('label');
+      item.className='cl-item'+(vis?'':' off');
+      item.innerHTML=`<input type="checkbox" ${vis?'checked':''}><span class="cl-line" style="border-top-color:${d.borderColor};${(d.borderDash||[]).length?'border-top-style:dashed;':''}"></span><span>${d.label}</span>`;
+      const cb=item.querySelector('input');
+      cb.addEventListener('change',()=>{ this._p.setDatasetVisibility(i,cb.checked); this._p.update(); item.classList.toggle('off',!cb.checked); });
+      box.appendChild(item);
     });
   },
   alloc(holdings){
@@ -1340,8 +1361,52 @@ const UI = {
   }
 };
 
+// ── funny stats ──────────────────────────────────────────────
+const Funny = {
+  render(){
+    const grid=$('funny-grid'); if(!grid)return;
+    const base=Cfg.get().cur, txs=S.txs();
+    const trades=txs.filter(t=>t.type==='buy'||t.type==='sell');
+    const cy=new Date().getFullYear(), py=cy-1;
+    const agg=Y=>{
+      const ts=trades.filter(t=>+t.date.slice(0,4)===Y).sort((a,b)=>a.date.localeCompare(b.date));
+      const n=ts.length;
+      const sum=a=>a.reduce((s,x)=>s+x,0);
+      const vals=ts.map(t=>FX.cv(t.qty*t.price,t.ccy,base)), fees=ts.map(t=>FX.cv(t.fees||0,t.ccy,base));
+      let freq=null; if(n>=2)freq=(Date.parse(ts[n-1].date)-Date.parse(ts[0].date))/86400000/(n-1);
+      const buys=ts.filter(t=>t.type==='buy');
+      const biggest=buys.length?Math.max(...buys.map(t=>FX.cv(t.qty*t.price+(t.fees||0),t.ccy,base))):0;
+      const cnt={}; ts.forEach(t=>cnt[t.symbol]=(cnt[t.symbol]||0)+1);
+      let top=null; for(const s in cnt)if(!top||cnt[s]>cnt[top])top=s;
+      return {n,avgVal:n?sum(vals)/n:0,avgFee:n?sum(fees)/n:0,freq,biggest,top,topN:top?cnt[top]:0};
+    };
+    const A=agg(cy), B=agg(py);
+    // +/-% vs previous year (green up / red down)
+    const dpct=(cur,prev)=> prev>0
+      ? `<span class="${cur>=prev?'pos':'neg'}">${fPct((cur-prev)/prev*100)}</span> <span style="color:var(--sub)">vs ${py}</span>`
+      : `<span style="color:var(--dim)">no ${py} data</span>`;
+    // best / worst holding since purchase
+    const {arr}=Port.enrich(Port.holdings(txs),base);
+    const wp=arr.filter(h=>h.glp!=null).sort((a,b)=>b.glp-a.glp);
+    const best=wp[0], worst=wp.length>1?wp[wp.length-1]:null;
+    const perfV=h=>h?`${h.sym} <span class="${h.glp>=0?'pos':'neg'}">${fPct(h.glp)}</span>`:'—';
+    const perfS=h=>h?`${Assets.name(h.sym)||h.sym} · ${fmt(h.gl,0,base)}`:'need live prices';
+    const card=(l,v,s)=>`<div class="fstat"><div class="fl">${l}</div><div class="fv">${v}</div><div class="fs">${s||'—'}</div></div>`;
+    grid.innerHTML=[
+      card(`Transactions in ${cy}`, A.n, dpct(A.n,B.n)),
+      card('Avg Frequency', A.freq!=null?`every ${Math.round(A.freq)} days`:'—', A.freq!=null&&B.freq!=null?dpct(A.freq,B.freq):`<span style="color:var(--dim)">no ${py} data</span>`),
+      card('Avg Transaction Value', A.n?fmt(A.avgVal,0,base):'—', dpct(A.avgVal,B.avgVal)),
+      card('Avg Transaction Fee', A.n?fmt(A.avgFee,2,base):'—', dpct(A.avgFee,B.avgFee)),
+      card('Biggest Single Buy', A.biggest?fmt(A.biggest,0,base):'—', dpct(A.biggest,B.biggest)),
+      card('Most Traded Asset', A.top?(Assets.name(A.top)||A.top):'—', A.top?`${A.topN} trade${A.topN!==1?'s':''} in ${cy}`+(B.top?` · ${py}: ${B.top}`:''):'—'),
+      card('Best Performer', perfV(best), best?`since purchase · ${perfS(best)}`:'need live prices'),
+      card('Worst Performer', perfV(worst), worst?`since purchase · ${perfS(worst)}`:(best?'only one holding':'need live prices')),
+    ].join('');
+  }
+};
+
 // ── app controller ───────────────────────────────────────────
-const TITLES={dashboard:'Dashboard',holdings:'Holdings',backtest:'Backtest',projections:'Projections',transactions:'Transactions',dividends:'Dividends',settings:'Settings'};
+const TITLES={dashboard:'Dashboard',holdings:'Holdings',backtest:'Backtest',projections:'Projections',transactions:'Transactions',dividends:'Dividends',funny:'Funny Stats',settings:'Settings'};
 const App = {
   editId:null, txType:'buy', pxSym:null,
   selSym:null, selName:'', selCcy:'', pxManual:false, _results:[], _sT:null,
@@ -1359,6 +1424,7 @@ const App = {
       if(t==='transactions')UI.txs();
       if(t==='dividends')UI.divs();
       if(t==='costs')Costs.render();
+      if(t==='funny')Funny.render();
       if(t==='backtest'&&!BT2._booted){BT2.boot();BT2._booted=true;}
       if(t==='projections')Proj.render();
     }));
@@ -1677,7 +1743,7 @@ const App = {
     else Px.setS('ok','No holdings');
     $('refresh-btn').textContent='Refresh';
   },
-  refresh(){UI.holdings();const p=document.querySelector('.panel.on');if(p?.id==='tab-transactions')UI.txs();if(p?.id==='tab-dividends')UI.divs();if(p?.id==='tab-projections')Proj.render();if(p?.id==='tab-costs')Costs.render();}
+  refresh(){UI.holdings();const p=document.querySelector('.panel.on');if(p?.id==='tab-transactions')UI.txs();if(p?.id==='tab-dividends')UI.divs();if(p?.id==='tab-projections')Proj.render();if(p?.id==='tab-costs')Costs.render();if(p?.id==='tab-funny')Funny.render();}
 };
 
 // ── data management ──────────────────────────────────────────
