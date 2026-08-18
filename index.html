@@ -37,6 +37,7 @@ button,input,select{font-family:inherit}
 .cur-btn.on{background:var(--surface2);color:#fff;border-color:var(--border2)}
 .content{max-width:1480px;margin:0 auto;padding:24px}
 .panel{display:none}.panel.on{display:block}
+tr.tx-hl>td{animation:txHl 2.4s ease-out}@keyframes txHl{0%,25%{background:rgba(239,68,68,.28)}100%{background:transparent}}
 
 /* ── Chips ── */
 .chips{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
@@ -309,6 +310,10 @@ input[type=number]{-moz-appearance:textfield}
         <div class="chart-wrap" style="height:200px"><canvas id="c-alloc"></canvas></div>
         <div class="a-legend" id="a-leg"></div>
       </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">Capital Invested</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-invested"></canvas></div>
     </div>
   </div>
 
@@ -1046,7 +1051,7 @@ const COLORS=['#22c55e','#3b82f6','#a855f7','#f59e0b','#06b6d4','#ec4899','#84cc
 const GRID='#1e1e1e', TICK='#666666';
 const TT={backgroundColor:'#141414',borderColor:'#2a2a2a',borderWidth:1,titleColor:'#f0f0f0',bodyColor:'#888888',padding:8,cornerRadius:2};
 const Charts = {
-  _p:null,_a:null,_db:null,_dp:null,_range:'all',_perfBusy:false,
+  _p:null,_i:null,_a:null,_db:null,_dp:null,_range:'all',_perfBusy:false,
   setRange(r){this._range=r;document.querySelectorAll('#perf-pills .pill').forEach(b=>b.classList.toggle('on',b.dataset.r===r));this.perf();},
   chartOpts(base){
     return{
@@ -1058,7 +1063,7 @@ const Charts = {
   async perf(){
     const base=Cfg.get().cur, txs=S.txs();
     const syms=[...new Set(txs.filter(t=>t.type!=='dividend').map(t=>t.symbol))];   // every symbol ever traded
-    if(!syms.length){ if(this._p){this._p.destroy();this._p=null;} return; }
+    if(!syms.length){ if(this._p){this._p.destroy();this._p=null;} if(this._i){this._i.destroy();this._i=null;} return; }
     this._renderPerf(base,txs);                            // draw immediately with cached data
     if(this._perfBusy)return;
     const rk=this._range||'all';
@@ -1075,7 +1080,7 @@ const Charts = {
   },
   _renderPerf(base,txs){
     const nd=txs.filter(t=>t.type!=='dividend');
-    if(!nd.length){ if(this._p){this._p.destroy();this._p=null;} return; }
+    if(!nd.length){ if(this._p){this._p.destroy();this._p=null;} if(this._i){this._i.destroy();this._i=null;} return; }
     const today=new Date(), todayStr=today.toISOString().slice(0,10);
     const earliest=nd.map(t=>t.date).sort()[0];
     const rk=this._range||'all';
@@ -1127,15 +1132,47 @@ const Charts = {
     }
     const lblOf=dd=> new Date(dd+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const labels=dates.map(lblOf);
+    // transaction markers — snap each buy/sell to the nearest x-axis date; group txs landing on the same point
+    const mk=nd.filter(t=>t.type==='buy'||t.type==='sell');
+    const markerY=new Array(dates.length).fill(null), markerTx={};
+    const snap=D=>{ let best=0,bd=Infinity; for(let i=0;i<dates.length;i++){const d=Math.abs(Date.parse(dates[i])-Date.parse(D)); if(d<bd){bd=d;best=i;}} return best; };
+    mk.forEach(t=>{ if(t.date<dates[0]||t.date>dates[dates.length-1])return; const i=snap(t.date); markerY[i]=0; (markerTx[i]=markerTx[i]||[]).push(t); });
+    const txLine=t=>`${t.type==='buy'?'Buy':'Sell'} ${(+t.qty).toFixed(2)} ${Assets.name(t.symbol)||t.symbol} @ ${fmt(t.price,2,t.ccy)} = ${fmt(t.qty*t.price+(t.fees||0),2,t.ccy)}`;
     const opts=this.chartOpts(base);
     opts.interaction={intersect:false,mode:'index'};
-    opts.plugins.tooltip.callbacks={label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y,2,base)}`};
+    opts.scales.y2={display:false,min:-0.05,max:1};
+    opts.plugins.legend.labels.filter=it=>it.text!=='Transactions';
+    opts.plugins.tooltip.callbacks={label:c=>{
+      if(c.dataset._marker){const arr=markerTx[c.dataIndex]||[];return arr.map(txLine);}
+      return ` ${c.dataset.label}: ${fmt(c.parsed.y,2,base)}`;
+    }};
+    opts.onClick=(e,els)=>{
+      const hit=els.find(el=>this._p.data.datasets[el.datasetIndex]._marker);
+      if(!hit)return; const arr=markerTx[hit.index]; if(arr&&arr.length)App.gotoTx(arr[0].id);
+    };
     if(this._p)this._p.destroy();
     this._p=new Chart($('c-perf').getContext('2d'),{
       type:'line',
       data:{labels,datasets:[
         {label:'Value',data:vals,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.05)',fill:true,tension:.35,pointRadius:0,pointHoverRadius:4,borderWidth:2},
-        {label:'Invested',data:costs,borderColor:'#666666',backgroundColor:'transparent',borderDash:[4,4],tension:.35,pointRadius:0,pointHoverRadius:0,borderWidth:1.5}
+        {label:'Invested',data:costs,borderColor:'#666666',backgroundColor:'transparent',borderDash:[4,4],tension:.35,pointRadius:0,pointHoverRadius:0,borderWidth:1.5},
+        {label:'Transactions',_marker:true,data:markerY,yAxisID:'y2',showLine:false,pointStyle:'triangle',pointRadius:6,pointHoverRadius:8,pointRotation:180,backgroundColor:'#ef4444',borderColor:'#ef4444'}
+      ]},
+      options:opts
+    });
+    this._renderInvested(base,labels,costs);
+  },
+  _renderInvested(base,labels,costs){
+    if(this._i)this._i.destroy();
+    const el=$('c-invested'); if(!el)return;
+    const opts=this.chartOpts(base);
+    opts.interaction={intersect:false,mode:'index'};
+    opts.plugins.legend.display=false;
+    opts.plugins.tooltip.callbacks={label:c=>` Invested: ${fmt(c.parsed.y,2,base)}`};
+    this._i=new Chart(el.getContext('2d'),{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'Capital Invested',data:costs,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',fill:true,stepped:'before',pointRadius:0,pointHoverRadius:4,borderWidth:2}
       ]},
       options:opts
     });
@@ -1253,7 +1290,7 @@ const UI = {
       const tot=t.qty*t.price+(t.fees||0);
       const tag=`<span class="badge tag-${t.type==='dividend'?'div':t.type}">${t.type==='dividend'?'Div':t.type.charAt(0).toUpperCase()+t.type.slice(1)}</span>`;
       const nm=Assets.name(t.symbol);
-      return`<tr>
+      return`<tr data-txid="${t.id}">
         <td>${fDate(t.date)}</td><td>${tag}</td>
         <td style="max-width:200px">
           <div style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nm||t.symbol}</div>
@@ -1271,6 +1308,12 @@ const UI = {
         </td>
       </tr>`;
     }).join('');
+  },
+  highlightTx(id){
+    const row=document.querySelector(`#tx-body tr[data-txid="${id}"]`);
+    if(!row)return;
+    row.scrollIntoView({behavior:'smooth',block:'center'});
+    row.classList.remove('tx-hl'); void row.offsetWidth; row.classList.add('tx-hl');   // restart the flash
   },
   divs(){
     const txs=S.txs(),base=Cfg.get().cur;
@@ -1601,6 +1644,11 @@ const App = {
   delTx(id){
     if(!confirm('Delete this transaction?'))return;
     S.saveTxs(S.txs().filter(t=>t.id!==id));toast('Deleted','info');this.refresh();
+  },
+  gotoTx(id){   // jump to the Transactions tab and flash the clicked transaction's row
+    $('tx-q').value=''; $('tx-tf').value=''; $('tx-af').value='';   // clear filters so the row is visible
+    document.querySelector('.nav-item[data-tab="transactions"]').click();
+    requestAnimationFrame(()=>UI.highlightTx(id));
   },
   delHolding(sym){
     if(!confirm(`Delete ALL transactions for ${sym}?`))return;
