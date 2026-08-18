@@ -22,7 +22,8 @@ button,input,select{font-family:inherit}
 /* ── Top nav ── */
 .topnav{display:flex;align-items:center;gap:28px;padding:0 28px;height:60px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50;flex-wrap:wrap}
 .brand{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text);white-space:nowrap}
-.nav{display:flex;align-items:center;gap:4px;min-width:0;overflow-x:auto}
+.nav{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
 .nav-item{background:none;border:none;border-bottom:2px solid transparent;padding:8px 14px;font-size:13px;color:var(--sub);cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap}
 .nav-item:hover{color:var(--text)}
 .nav-item.on{color:#fff;border-bottom-color:var(--accent);font-weight:500}
@@ -282,6 +283,17 @@ input[type=number]{-moz-appearance:textfield}
 .sim-diff{font-size:12px;color:var(--sub);margin:10px 0 2px;font-family:var(--mono)}
 .sim-disc{font-size:10px;color:var(--dim);border-top:1px solid var(--border);margin-top:16px;padding-top:10px;line-height:1.5}
 .sim-mini-ac{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);max-height:220px;overflow-y:auto;z-index:20;display:none}
+/* ── Roadmap ── */
+.rm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+@media(max-width:1000px){.rm-grid{grid-template-columns:1fr}}
+.rm-item{display:flex;gap:11px;padding:12px 0;border-top:1px solid var(--border)}
+.rm-item:first-of-type{border-top:none;padding-top:2px}
+.rm-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0;background:var(--dim)}
+.rm-dot.done{background:var(--green)}
+.rm-dot.prog{background:var(--accent)}
+.rm-dot.plan{background:transparent;border:1px solid var(--border2)}
+.rm-t{font-size:13px;color:var(--text);font-weight:600}
+.rm-d{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
 
 /* ── Responsive ── */
 @media(max-width:1100px){.chips{grid-template-columns:repeat(2,1fr)}.chart-row{grid-template-columns:1fr}}
@@ -312,6 +324,7 @@ input[type=number]{-moz-appearance:textfield}
     <button class="nav-item" data-tab="costs">Costs</button>
     <button class="nav-item" data-tab="funny">Funny Stats</button>
     <button class="nav-item" data-tab="domani">E domani?</button>
+    <button class="nav-item" data-tab="roadmap">Roadmap</button>
     <button class="nav-item" data-tab="settings">Settings</button>
   </nav>
   <div class="nav-actions">
@@ -651,6 +664,34 @@ input[type=number]{-moz-appearance:textfield}
             </table>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="panel" id="tab-roadmap">
+    <div class="card-title" style="font-size:15px;color:var(--text);text-transform:none;letter-spacing:0;margin-bottom:2px">Roadmap</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:20px">What's shipped and what's coming next.</div>
+    <div class="rm-grid">
+      <div class="card">
+        <div class="card-title">Shipped</div>
+        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">Live prices &amp; FX</div><div class="rm-d">Yahoo Finance quotes with USD/EUR/CHF conversion.</div></div></div>
+        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">Historical performance chart</div><div class="rm-d">Real daily closes, time filters, transaction markers.</div></div></div>
+        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">Funny Stats</div><div class="rm-d">Investing-habit metrics with year-over-year comparison.</div></div></div>
+        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">"E domani?" simulator</div><div class="rm-d">Sandbox projections for hypothetical buys, sells &amp; plans.</div></div></div>
+        <div class="rm-item"><span class="rm-dot done"></span><div><div class="rm-t">TradingView-style redesign</div><div class="rm-d">Pure-black theme, DM Sans, bold metrics.</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">In Progress</div>
+        <div class="rm-item"><span class="rm-dot prog"></span><div><div class="rm-t">Dividend yield auto-fetch</div><div class="rm-d">Pull real trailing yields into the simulator assumptions.</div></div></div>
+        <div class="rm-item"><span class="rm-dot prog"></span><div><div class="rm-t">Mobile layout polish</div><div class="rm-d">Denser cards and scrollable nav on small screens.</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Planned</div>
+        <div class="rm-item"><span class="rm-dot plan"></span><div><div class="rm-t">Price &amp; allocation alerts</div><div class="rm-d">Notify when a holding drifts past a target weight.</div></div></div>
+        <div class="rm-item"><span class="rm-dot plan"></span><div><div class="rm-t">Multi-portfolio support</div><div class="rm-d">Track separate accounts and combine them.</div></div></div>
+        <div class="rm-item"><span class="rm-dot plan"></span><div><div class="rm-t">Tax report export</div><div class="rm-d">Realised gains &amp; dividend summaries per year.</div></div></div>
+        <div class="rm-item"><span class="rm-dot plan"></span><div><div class="rm-t">Saved simulation scenarios</div><div class="rm-d">Name and revisit "E domani?" what-ifs.</div></div></div>
       </div>
     </div>
   </div>
@@ -1692,7 +1733,7 @@ const Sim = {
 };
 
 // ── app controller ───────────────────────────────────────────
-const TITLES={dashboard:'Dashboard',holdings:'Holdings',backtest:'Backtest',projections:'Projections',transactions:'Transactions',dividends:'Dividends',funny:'Funny Stats',domani:'E domani?',settings:'Settings'};
+const TITLES={dashboard:'Dashboard',holdings:'Holdings',backtest:'Backtest',projections:'Projections',transactions:'Transactions',dividends:'Dividends',funny:'Funny Stats',domani:'E domani?',roadmap:'Roadmap',settings:'Settings'};
 const App = {
   editId:null, txType:'buy', pxSym:null,
   selSym:null, selName:'', selCcy:'', pxManual:false, _results:[], _sT:null,

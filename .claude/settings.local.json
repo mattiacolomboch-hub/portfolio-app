@@ -7,7 +7,9 @@
       "Bash(sed -n '/async fetchMonthly\\(sym,since\\)/,/^  },/p' index.html)",
       "Bash(sed -n '/async perf\\(\\){/,/_renderPerf\\(base,txs,startYM\\);/p' index.html)",
       "Bash(node *)",
-      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,760 --screenshot=/tmp/pf-shot2.png \"file://$\\(pwd\\)/index.html\")"
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,760 --screenshot=/tmp/pf-shot2.png \"file://$\\(pwd\\)/index.html\")",
+      "Bash(sed -i '' -e 's/<div class=\"panel\" id=\"tab-roadmap\">/<div class=\"panel on\" id=\"tab-roadmap\">/' -e 's/<div class=\"panel on\" id=\"tab-dashboard\">/<div class=\"panel\" id=\"tab-dashboard\">/' /tmp/pf-roadmap.html)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,720 --screenshot=/tmp/rm.png \"file:///tmp/pf-roadmap.html\")"
     ]
   }
 }
