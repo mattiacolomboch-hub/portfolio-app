@@ -20,7 +20,7 @@ button,input,select{font-family:inherit}
 .pos{color:var(--green)!important}.neg{color:var(--red)!important}.neu{color:var(--text)!important}
 
 /* ── Top nav ── */
-.topnav{display:flex;align-items:center;gap:28px;padding:0 28px;height:60px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50;flex-wrap:wrap}
+.topnav{display:flex;align-items:center;gap:28px;padding:32px 28px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50;flex-wrap:wrap}
 .brand{display:flex;flex-direction:column;gap:1px;white-space:nowrap;line-height:1.15}
 .brand-name{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text)}
 .brand-tag{font-size:8.5px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--sub)}
@@ -286,7 +286,6 @@ input[type=number]{-moz-appearance:textfield}
 .sim-disc{font-size:10px;color:var(--dim);border-top:1px solid var(--border);margin-top:16px;padding-top:10px;line-height:1.5}
 .sim-mini-ac{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);max-height:220px;overflow-y:auto;z-index:20;display:none}
 /* ── Roadmap: header ── */
-body.hide-cur .cur-switch{display:none}
 .rm-head{text-align:center;padding:14px 0 40px}
 .rm-slogan{font-size:clamp(2rem,5.5vw,3.1rem);font-style:italic;font-weight:700;color:var(--text);letter-spacing:-.02em;line-height:1.05}
 .rm-subtitle{font-size:14px;color:var(--sub);margin-top:14px}
@@ -408,12 +407,6 @@ body.hide-cur .cur-switch{display:none}
   </nav>
   <div class="nav-actions">
     <div class="status"><span class="sdot" id="sdot"></span><span id="stxt">Ready</span></div>
-    <div class="cur-switch">
-      <button class="cur-btn on" data-cur="USD" onclick="App.setCur('USD')">USD</button>
-      <button class="cur-btn" data-cur="EUR" onclick="App.setCur('EUR')">EUR</button>
-      <button class="cur-btn" data-cur="CHF" onclick="App.setCur('CHF')">CHF</button>
-    </div>
-    <button class="btn btn-s btn-sm" onclick="App.refreshPrices()" id="refresh-btn">Refresh</button>
   </div>
 </header>
 
@@ -424,6 +417,7 @@ body.hide-cur .cur-switch{display:none}
     <div class="chips">
       <div class="chip chip-hero"><div class="l">Total Value</div><div class="v" id="dash-val">—</div><div class="s" id="dash-val-s">—</div></div>
       <div class="chip"><div class="l">Day P&amp;L</div><div class="v" id="dash-day">—</div><div class="s" id="dash-day-s">—</div></div>
+      <button class="btn btn-s btn-sm" id="refresh-btn" onclick="App.refreshPrices()" style="margin-left:auto;align-self:center">Refresh</button>
     </div>
     <div class="chart-row">
       <div class="card">
@@ -805,14 +799,22 @@ body.hide-cur .cur-switch{display:none}
   <!-- SETTINGS -->
   <div class="panel" id="tab-settings">
     <div class="sset-sec">
-      <div class="sset-title">General</div>
+      <div class="sset-title">Display Currency</div>
       <div class="card">
         <div class="sset-row">
-          <div><div class="sset-lbl">Base Currency</div><div class="sset-sub">All values shown in this currency</div></div>
-          <select class="fc" id="cfg-cur" style="width:90px" onchange="App.setCur(this.value)">
-            <option value="USD">USD $</option><option value="EUR">EUR €</option><option value="CHF">CHF Fr</option>
-          </select>
+          <div><div class="sset-lbl">Base Currency</div><div class="sset-sub">All values across the app are shown in this currency</div></div>
+          <div class="cur-switch">
+            <button class="cur-btn" data-cur="USD" onclick="App.setCur('USD')">USD</button>
+            <button class="cur-btn" data-cur="EUR" onclick="App.setCur('EUR')">EUR</button>
+            <button class="cur-btn" data-cur="CHF" onclick="App.setCur('CHF')">CHF</button>
+          </div>
+          <input type="hidden" id="cfg-cur" value="USD">
         </div>
+      </div>
+    </div>
+    <div class="sset-sec">
+      <div class="sset-title">General</div>
+      <div class="card">
         <div class="sset-row">
           <div><div class="sset-lbl">Show % change</div><div class="sset-sub">Display return % in holdings</div></div>
           <label class="tog"><input type="checkbox" id="cfg-pct" checked onchange="Cfg.save()"><span class="tog-sl"></span></label>
@@ -1913,7 +1915,6 @@ const App = {
       b.classList.add('on');
       const t=b.dataset.tab;
       $('tab-'+t).classList.add('on');
-      document.body.classList.toggle('hide-cur',t==='roadmap');   // currency switcher irrelevant on Roadmap
       if(t==='dashboard'||t==='holdings')UI.holdings();
       if(t==='transactions')UI.txs();
       if(t==='dividends')UI.divs();
