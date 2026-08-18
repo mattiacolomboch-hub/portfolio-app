@@ -285,50 +285,68 @@ input[type=number]{-moz-appearance:textfield}
 .sim-diff{font-size:12px;color:var(--sub);margin:10px 0 2px;font-family:var(--mono)}
 .sim-disc{font-size:10px;color:var(--dim);border-top:1px solid var(--border);margin-top:16px;padding-top:10px;line-height:1.5}
 .sim-mini-ac{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);max-height:220px;overflow-y:auto;z-index:20;display:none}
-/* ── Roadmap timeline ── */
-.rm-legend{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:6px}
-.rm-lg{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--sub)}
-.rm-lg i{width:10px;height:10px;border-radius:50%;display:inline-block}
-.rm-lg i.done{background:var(--green)}.rm-lg i.prog{background:var(--accent)}.rm-lg i.soon{background:#444}
-.tl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 0}
-.tl-scroll::-webkit-scrollbar{height:8px}.tl-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-.tl-track{display:flex;min-width:min-content}
-.tl-item{position:relative;flex:0 0 212px;height:360px}
-.tl-item::before{content:'';position:absolute;top:50%;left:0;width:100%;border-top:2px solid var(--border2);transform:translateY(-1px);z-index:0}
-.tl-item.prog::before{border-top-style:dashed;border-top-color:rgba(41,98,255,.55)}
-.tl-item.soon::before{border-top-style:dashed;border-top-color:#444}
-.tl-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;z-index:3;border:3px solid var(--bg);box-sizing:content-box}
-.tl-item.done .tl-dot{background:var(--green)}
-.tl-item.prog .tl-dot{background:var(--accent);animation:tlPulse 1.8s infinite}
-.tl-item.soon .tl-dot{background:#444}
-.tl-card{position:absolute;left:50%;transform:translateX(-50%);width:188px;border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;background:var(--bg)}
-.tl-item.up .tl-card{bottom:50%;margin-bottom:28px}
-.tl-item.down .tl-card{top:50%;margin-top:28px}
-.tl-card::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:1px;height:28px;background:var(--border2)}
-.tl-item.up .tl-card::after{top:100%}
-.tl-item.down .tl-card::after{bottom:100%}
-.tl-date{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.tl-item.done .tl-date{color:var(--green)}
-.tl-item.prog .tl-date{color:var(--accent)}
-.tl-item.soon .tl-date{color:var(--sub)}
-.tl-title{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3}
-.tl-desc{font-size:11px;color:var(--sub);margin-top:4px;line-height:1.45}
-@keyframes tlPulse{0%{box-shadow:0 0 0 0 rgba(41,98,255,.5)}70%{box-shadow:0 0 0 9px rgba(41,98,255,0)}100%{box-shadow:0 0 0 0 rgba(41,98,255,0)}}
-.rm-table td{font-family:inherit;font-size:12px;color:var(--body);vertical-align:top;line-height:1.5}
-.rm-table td:first-child{color:var(--text);font-weight:600}
-.rm-table td:last-child{white-space:nowrap}
-.rm-note{font-size:11px;color:var(--dim);margin-top:20px;text-align:center}
-/* vertical timeline on phones */
-@media(max-width:820px){
-  .tl-scroll{overflow-x:visible}
-  .tl-track{flex-direction:column;min-width:0}
-  .tl-item{flex:none;width:100%;height:auto;padding:0 0 24px 32px}
-  .tl-item::before{top:0;left:14px;width:0;height:100%;border-top:none;border-left:2px solid var(--border2);transform:none}
-  .tl-item.prog::before{border-left-style:dashed;border-left-color:rgba(41,98,255,.55);border-top:none}
-  .tl-item.soon::before{border-left-style:dashed;border-left-color:#444;border-top:none}
-  .tl-dot{top:5px;left:14px;transform:translate(-50%,0)}
-  .tl-card{position:static;transform:none;width:auto;margin:0!important}
-  .tl-card::after{display:none}
+/* ── Roadmap: header ── */
+body.hide-cur .cur-switch{display:none}
+.rm-head{text-align:center;padding:14px 0 40px}
+.rm-slogan{font-size:clamp(2rem,5.5vw,3.1rem);font-style:italic;font-weight:700;color:var(--text);letter-spacing:-.02em;line-height:1.05}
+.rm-subtitle{font-size:14px;color:var(--sub);margin-top:14px}
+.rm-sec-h{font-size:22px;font-weight:700;color:var(--text);text-align:center;margin:8px 0 28px;letter-spacing:-.01em}
+/* ── Roadmap: vertical timeline ── */
+.vtl{position:relative;max-width:940px;margin:0 auto;padding:6px 0}
+.vtl::before{content:'';position:absolute;top:6px;bottom:6px;left:50%;width:3px;transform:translateX(-50%);border-radius:3px;
+  background:linear-gradient(to bottom,#26a69a 0%,#26a69a 52%,#2962ff 58%,#2962ff 68%,#444 74%,#444 100%)}
+.vtl-item{position:relative;display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;margin-bottom:40px}
+.vtl-item:last-child{margin-bottom:0}
+.vtl-dot{grid-column:2;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:27px;line-height:1;z-index:2;border:3px solid #000;box-sizing:border-box}
+.vtl-item.done .vtl-dot{background:#26a69a}
+.vtl-item.prog .vtl-dot{background:#2962ff;animation:vtlPulse 1.9s infinite}
+.vtl-item.soon .vtl-dot{background:#2a2a2a;border:2px dashed #555}
+.vtl-date{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);padding:0 30px}
+.vtl-item.done .vtl-date{color:#26a69a}.vtl-item.prog .vtl-date{color:#2962ff}
+.vtl-body{padding:0 30px}
+.vtl-card{position:relative;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;background:var(--bg)}
+.vtl-item.prog .vtl-card{border-color:rgba(41,98,255,.4)}
+.vtl-item.soon .vtl-card{border-style:dashed;border-color:#333}
+.vtl-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
+.vtl-desc{font-size:12.5px;color:var(--sub);margin-top:5px;line-height:1.55}
+/* default: date left, body right */
+.vtl-date{grid-column:1;text-align:right}
+.vtl-body{grid-column:3;text-align:left}
+.vtl-card::before{content:'';position:absolute;top:50%;width:30px;height:2px;background:var(--border2);left:-30px}
+/* reversed: body left, date right */
+.vtl-item.rev .vtl-date{grid-column:3;text-align:left}
+.vtl-item.rev .vtl-body{grid-column:1;text-align:right}
+.vtl-item.rev .vtl-card::before{left:auto;right:-30px}
+@keyframes vtlPulse{0%{box-shadow:0 0 0 0 rgba(41,98,255,.5)}70%{box-shadow:0 0 0 12px rgba(41,98,255,0)}100%{box-shadow:0 0 0 0 rgba(41,98,255,0)}}
+/* ── Roadmap: long-term objectives ── */
+.lt-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:940px;margin:0 auto}
+@media(max-width:720px){.lt-grid{grid-template-columns:1fr}}
+.lt-card{border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;display:flex;gap:15px;align-items:flex-start}
+.lt-emoji{font-size:26px;line-height:1.2;flex-shrink:0}
+.lt-trigger{font-size:13.5px;font-weight:700;color:var(--accent)}
+.lt-txt{font-size:13px;color:var(--body);margin-top:4px;line-height:1.55}
+.lt-journey{grid-column:1/-1;justify-content:center;text-align:center;border-color:var(--border2)}
+.lt-journey .lt-txt{font-size:15px;color:var(--text);font-weight:600;margin-top:0}
+/* ── Roadmap: footer ── */
+.rm-foot{margin-top:52px;border-top:1px solid var(--border);padding:60px 24px 24px;text-align:center}
+.rm-foot-big{font-size:clamp(1.7rem,4.5vw,2.5rem);font-weight:700;color:var(--text);letter-spacing:-.01em}
+.rm-ig{display:inline-flex;align-items:center;gap:10px;margin-top:20px;color:var(--accent);font-size:16px;font-weight:600;text-decoration:none}
+.rm-ig:hover{text-decoration:underline}
+.rm-ig svg{width:22px;height:22px}
+.rm-flinks{margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:12.5px}
+.rm-flinks a{color:var(--sub);text-decoration:none;cursor:pointer}
+.rm-flinks a:hover{color:var(--text)}
+.rm-flinks span{color:var(--dim)}
+.rm-foot-small{margin-top:26px;font-size:10px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase}
+/* vertical timeline on phones — single left rail */
+@media(max-width:720px){
+  .vtl{max-width:560px}
+  .vtl::before{left:22px}
+  .vtl-item{display:block;position:relative;padding:0 0 0 60px;margin-bottom:28px}
+  .vtl-dot{position:absolute;left:0;top:0;width:44px;height:44px;font-size:20px}
+  .vtl-date,.vtl-item.rev .vtl-date{display:block;text-align:left;padding:0 0 6px}
+  .vtl-body,.vtl-item.rev .vtl-body{display:block;text-align:left;padding:0}
+  .vtl-card::before,.vtl-item.rev .vtl-card::before{display:none}
 }
 /* ── About ── */
 .about{max-width:840px}
@@ -731,51 +749,57 @@ input[type=number]{-moz-appearance:textfield}
 
   <!-- ROADMAP -->
   <div class="panel" id="tab-roadmap">
-    <div class="card-title" style="font-size:15px;color:var(--text);text-transform:none;letter-spacing:0;margin-bottom:2px">Roadmap</div>
-    <div style="font-size:12px;color:var(--sub);margin-bottom:18px">The journey so far and where we're heading.</div>
-    <div class="card" style="margin-bottom:20px">
-      <div class="rm-legend">
-        <span class="rm-lg"><i class="done"></i> Completed</span>
-        <span class="rm-lg"><i class="prog"></i> In Progress</span>
-        <span class="rm-lg"><i class="soon"></i> Coming Soon</span>
-      </div>
-      <div class="tl-scroll">
-        <div class="tl-track">
-          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Jul 1, 2026</div><div class="tl-title">Portfolio Tracker live</div><div class="tl-desc">Live prices, multi-currency, holdings table.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item done down"><div class="tl-card"><div class="tl-date">Jul 5, 2026</div><div class="tl-title">Transaction Management</div><div class="tl-desc">Buy/sell/dividend tracking, Degiro CSV import.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Jul 10, 2026</div><div class="tl-title">Performance Charts</div><div class="tl-desc">Historical price chart with time filters.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item done down"><div class="tl-card"><div class="tl-date">Jul 15, 2026</div><div class="tl-title">Backtest Engine</div><div class="tl-desc">Compare portfolio allocations with real historical data.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Jul 20, 2026</div><div class="tl-title">Projections</div><div class="tl-desc">Year-by-year capital growth simulator.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item done down"><div class="tl-card"><div class="tl-date">Jul 25, 2026</div><div class="tl-title">Costs Tracker</div><div class="tl-desc">TER, transaction fees, cost drag on returns.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Aug 1, 2026</div><div class="tl-title">Funny Stats &amp; Roadmap</div><div class="tl-desc">Investing habit analytics.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item done down"><div class="tl-card"><div class="tl-date">Aug 10, 2026</div><div class="tl-title">"E domani?" Simulator</div><div class="tl-desc">Sandbox for hypothetical portfolio changes.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item done up"><div class="tl-card"><div class="tl-date">Aug 18, 2026</div><div class="tl-title">TradingView-inspired redesign</div><div class="tl-desc">DM Sans, pure black, new color system.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item prog down"><div class="tl-card"><div class="tl-date">Q3 2026</div><div class="tl-title">Historical chart fix</div><div class="tl-desc">Real daily price data for all holdings.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item prog up"><div class="tl-card"><div class="tl-date">Q3 2026</div><div class="tl-title">Mobile optimization</div><div class="tl-desc">Full responsive layout for phone use.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item soon down"><div class="tl-card"><div class="tl-date">Q4 2026</div><div class="tl-title">More broker imports</div><div class="tl-desc">Interactive Brokers, Swissquote, Revolut.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item soon up"><div class="tl-card"><div class="tl-date">Q4 2026</div><div class="tl-title">Price alerts</div><div class="tl-desc">Notify when asset hits target price.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item soon down"><div class="tl-card"><div class="tl-date">Q1 2027</div><div class="tl-title">AI Portfolio Analysis</div><div class="tl-desc">Automated insights on risk, correlation, rebalancing suggestions.</div></div><span class="tl-dot"></span></div>
-          <div class="tl-item soon up"><div class="tl-card"><div class="tl-date">Q2 2027</div><div class="tl-title">Swiss Tax Report</div><div class="tl-desc">Export capital gains and dividend report for Swiss tax declaration.</div></div><span class="tl-dot"></span></div>
-        </div>
+    <div class="rm-head">
+      <div class="rm-slogan">We build. You invest.</div>
+      <div class="rm-subtitle">The CLMB Tracker journey — from idea to product</div>
+    </div>
+
+    <div class="vtl">
+      <div class="vtl-item done"><div class="vtl-date">Jul 1, 2026</div><div class="vtl-dot">🚀</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Live Prices &amp; Holdings</div><div class="vtl-desc">Real-time portfolio tracking with multi-currency support.</div></div></div></div>
+      <div class="vtl-item done rev"><div class="vtl-date">Jul 5, 2026</div><div class="vtl-dot">💸</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Transaction Management</div><div class="vtl-desc">Buy, sell, dividend tracking + Degiro CSV import.</div></div></div></div>
+      <div class="vtl-item done"><div class="vtl-date">Jul 10, 2026</div><div class="vtl-dot">📈</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Performance Charts</div><div class="vtl-desc">Historical price chart with 1W/1M/6M/1Y/5Y/ALL filters.</div></div></div></div>
+      <div class="vtl-item done rev"><div class="vtl-date">Jul 15, 2026</div><div class="vtl-dot">🔬</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Backtest Engine</div><div class="vtl-desc">Test portfolio allocations against real historical data.</div></div></div></div>
+      <div class="vtl-item done"><div class="vtl-date">Jul 20, 2026</div><div class="vtl-dot">🔮</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Projections</div><div class="vtl-desc">Year-by-year compound growth simulator.</div></div></div></div>
+      <div class="vtl-item done rev"><div class="vtl-date">Jul 25, 2026</div><div class="vtl-dot">💰</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Costs Tracker</div><div class="vtl-desc">TER, transaction fees, cost drag on real returns.</div></div></div></div>
+      <div class="vtl-item done"><div class="vtl-date">Aug 1, 2026</div><div class="vtl-dot">😄</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Funny Stats</div><div class="vtl-desc">Your investing habits, visualized.</div></div></div></div>
+      <div class="vtl-item done rev"><div class="vtl-date">Aug 10, 2026</div><div class="vtl-dot">🗺️</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Roadmap &amp; About</div><div class="vtl-desc">Transparency on data sources and future plans.</div></div></div></div>
+      <div class="vtl-item done"><div class="vtl-date">Aug 18, 2026</div><div class="vtl-dot">🎨</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">TradingView Redesign</div><div class="vtl-desc">Pure black, DM Sans, new design system.</div></div></div></div>
+
+      <div class="vtl-item prog rev"><div class="vtl-date">Q3 2026</div><div class="vtl-dot">⚙️</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">"E domani?" Simulator</div><div class="vtl-desc">Sandbox for hypothetical portfolio scenarios.</div></div></div></div>
+      <div class="vtl-item prog"><div class="vtl-date">Q3 2026</div><div class="vtl-dot">📱</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Mobile Optimization</div><div class="vtl-desc">Full responsive layout for phones.</div></div></div></div>
+
+      <div class="vtl-item soon rev"><div class="vtl-date">Q4 2026</div><div class="vtl-dot">🔔</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Price Alerts</div><div class="vtl-desc">Notify when asset hits your target.</div></div></div></div>
+      <div class="vtl-item soon"><div class="vtl-date">Q4 2026</div><div class="vtl-dot">🏦</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">More Broker Imports</div><div class="vtl-desc">Interactive Brokers, Swissquote, Revolut.</div></div></div></div>
+      <div class="vtl-item soon rev"><div class="vtl-date">Q1 2027</div><div class="vtl-dot">🤖</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">AI Portfolio Analysis</div><div class="vtl-desc">Automated risk and rebalancing insights.</div></div></div></div>
+      <div class="vtl-item soon"><div class="vtl-date">Q2 2027</div><div class="vtl-dot">🇨🇭</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">Swiss Tax Report</div><div class="vtl-desc">Export dividend and gains report for Swiss tax filing.</div></div></div></div>
+      <div class="vtl-item soon rev"><div class="vtl-date">2027</div><div class="vtl-dot">🌍</div><div class="vtl-body"><div class="vtl-card"><div class="vtl-title">European Expansion</div><div class="vtl-desc">Full support for all major European brokers and exchanges.</div></div></div></div>
+    </div>
+
+    <div style="margin-top:56px">
+      <div class="rm-sec-h">Where we're headed</div>
+      <div class="lt-grid">
+        <div class="lt-card"><span class="lt-emoji">👥</span><div><div class="lt-trigger">100 users</div><div class="lt-txt">Upgrade to EOD Historical Data — professional prices, full EU coverage.</div></div></div>
+        <div class="lt-card"><span class="lt-emoji">🤝</span><div><div class="lt-trigger">250 users</div><div class="lt-txt">Social Portfolio Network — share &amp; compare with friends.</div></div></div>
+        <div class="lt-card"><span class="lt-emoji">📊</span><div><div class="lt-trigger">500 users</div><div class="lt-txt">Fundamental Analysis — DCF, balance sheet, undervalued stock screener.</div></div></div>
+        <div class="lt-card"><span class="lt-emoji">📲</span><div><div class="lt-trigger">1000 users</div><div class="lt-txt">Native Mobile App — iOS &amp; Android.</div></div></div>
+        <div class="lt-card lt-journey"><span class="lt-emoji">🌐</span><div class="lt-txt">First: Switzerland → Then: Europe → Then: the world</div></div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">Long Term Objectives</div>
-      <div class="tbl-wrap">
-        <table class="rm-table">
-          <thead><tr><th>Objective</th><th>Trigger</th><th>Impact</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Premium Data (EOD Historical Data)</td><td>100+ active users</td><td>More precise prices, full European ETF coverage, longer history</td><td>🎯 Planned</td></tr>
-            <tr><td>Social Portfolio Network</td><td>250+ users</td><td>Share and compare portfolios with friends, leaderboards, anonymous public profiles</td><td>🎯 Planned</td></tr>
-            <tr><td>Fundamental Analysis</td><td>500+ users</td><td>P/E, DCF valuation, balance sheet analysis, undervalued stock screener</td><td>🎯 Planned</td></tr>
-            <tr><td>Real-time Alerts &amp; Notifications</td><td>Any stage</td><td>Push notifications for price targets, dividend payments, earnings dates</td><td>🎯 Planned</td></tr>
-            <tr><td>Multi-user Accounts</td><td>100+ users</td><td>Cloud sync, login system, portfolio accessible from any device</td><td>🎯 Planned</td></tr>
-            <tr><td>Mobile App (iOS/Android)</td><td>1000+ users</td><td>Native app with biometric login, widgets, push notifications</td><td>🚀 Dream</td></tr>
-          </tbody>
-        </table>
+
+    <div class="rm-foot">
+      <div class="rm-foot-big">Have a feature request?</div>
+      <a class="rm-ig" href="https://instagram.com/clmb.project" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+        @clmb.project
+      </a>
+      <div class="rm-flinks">
+        <a onclick="document.querySelector('.nav-item[data-tab=about]').click()">About</a><span>·</span>
+        <a onclick="document.querySelector('.nav-item[data-tab=about]').click()">Data Sources</a><span>·</span>
+        <a onclick="document.querySelector('.nav-item[data-tab=about]').click()">Privacy</a><span>·</span>
+        <a onclick="window.scrollTo({top:0,behavior:'smooth'})">Roadmap</a>
       </div>
+      <div class="rm-foot-small">CLMB Tracker — Portfolio Intelligence</div>
     </div>
-    <div class="rm-note">This roadmap is updated as the project evolves. Have a feature request? DM us.</div>
   </div>
 
   <!-- SETTINGS -->
@@ -1889,6 +1913,7 @@ const App = {
       b.classList.add('on');
       const t=b.dataset.tab;
       $('tab-'+t).classList.add('on');
+      document.body.classList.toggle('hide-cur',t==='roadmap');   // currency switcher irrelevant on Roadmap
       if(t==='dashboard'||t==='holdings')UI.holdings();
       if(t==='transactions')UI.txs();
       if(t==='dividends')UI.divs();

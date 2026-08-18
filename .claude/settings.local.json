@@ -17,7 +17,13 @@
       "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=3400,560 --screenshot=/tmp/rm4.png \"file:///tmp/pf-rm-full.html\")",
       "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=390,1400 --screenshot=/tmp/rm5.png \"file:///tmp/pf-rm.html\")",
       "Bash(sed -i '' -e 's/<div class=\"panel\" id=\"tab-about\">/<div class=\"panel on\" id=\"tab-about\">/' -e 's/<div class=\"panel on\" id=\"tab-dashboard\">/<div class=\"panel\" id=\"tab-dashboard\">/' /tmp/pf-ab.html)",
-      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,1150 --screenshot=/tmp/ab.png \"file:///tmp/pf-ab.html\")"
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,1150 --screenshot=/tmp/ab.png \"file:///tmp/pf-ab.html\")",
+      "Bash(sed -i '' -e 's/<body>/<body class=\"hide-cur\">/' /tmp/pf-rm.html)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,1500 --screenshot=/tmp/rm.png \"file:///tmp/pf-rm.html\")",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,3000 --screenshot=/tmp/rm-full.png \"file:///tmp/pf-rm.html\")",
+      "Bash(sips -c 1400 1400 --cropOffset 1600 0 /tmp/rm-full.png --out /tmp/rm-bottom.png)",
+      "Bash(sed -i '' -e 's#</style>#.vtl{display:none}.rm-head{display:none}</style>#' /tmp/pf-foot.html)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,760 --screenshot=/tmp/foot.png \"file:///tmp/pf-foot.html\")"
     ]
   }
 }
