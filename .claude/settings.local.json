@@ -6,7 +6,8 @@
       "Bash(node -e 'const fs=require\\(\"fs\"\\),vm=require\\(\"vm\"\\);const h=fs.readFileSync\\(\"index.html\",\"utf8\"\\);const m=[...h.matchAll\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/g\\)];new vm.Script\\(m[m.length-1][1]\\);console.log\\(\"OK\"\\)')",
       "Bash(sed -n '/async fetchMonthly\\(sym,since\\)/,/^  },/p' index.html)",
       "Bash(sed -n '/async perf\\(\\){/,/_renderPerf\\(base,txs,startYM\\);/p' index.html)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1400,760 --screenshot=/tmp/pf-shot2.png \"file://$\\(pwd\\)/index.html\")"
     ]
   }
 }

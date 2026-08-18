@@ -6,24 +6,24 @@
 <title>Portfolio</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0a0a;--surface:#111111;--surface2:#141414;--border:#1e1e1e;--border2:#2a2a2a;
-  --accent:#22c55e;--accent-h:#16a34a;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--yellow:#f59e0b;
-  --text:#f0f0f0;--sub:#666666;--dim:#444444;--r:2px;
+  --bg:#000000;--surface:#0f0f0f;--surface2:#161616;--border:#1a1a1a;--border2:#262626;
+  --accent:#2962ff;--accent-h:#1e53e5;--green:#26a69a;--red:#ef5350;--blue:#2962ff;--yellow:#f59e0b;
+  --text:#ffffff;--body:#a0a0a0;--sub:#6b6b6b;--dim:#3a3a3a;--r:2px;
   --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
 }
 html,body{height:100%}
-body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--body);font-size:13px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 button,input,select{font-family:inherit}
 .pos{color:var(--green)!important}.neg{color:var(--red)!important}.neu{color:var(--text)!important}
 
 /* ── Top nav ── */
-.topnav{display:flex;align-items:center;gap:20px;padding:0 24px;height:54px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50;flex-wrap:wrap}
-.brand{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--text);white-space:nowrap}
-.nav{display:flex;align-items:center;gap:2px;min-width:0;overflow-x:auto}
-.nav-item{background:none;border:none;border-bottom:2px solid transparent;padding:6px 12px;font-size:13px;color:var(--sub);cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap}
+.topnav{display:flex;align-items:center;gap:28px;padding:0 28px;height:60px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50;flex-wrap:wrap}
+.brand{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text);white-space:nowrap}
+.nav{display:flex;align-items:center;gap:4px;min-width:0;overflow-x:auto}
+.nav-item{background:none;border:none;border-bottom:2px solid transparent;padding:8px 14px;font-size:13px;color:var(--sub);cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap}
 .nav-item:hover{color:var(--text)}
 .nav-item.on{color:#fff;border-bottom-color:var(--accent);font-weight:500}
 .nav-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
@@ -35,36 +35,40 @@ button,input,select{font-family:inherit}
 .cur-btn{padding:5px 9px;background:none;border:1px solid var(--border);border-radius:var(--r);color:var(--sub);font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:.12s}
 .cur-btn:hover{color:var(--text);border-color:var(--border2)}
 .cur-btn.on{background:var(--surface2);color:#fff;border-color:var(--border2)}
-.content{max-width:1480px;margin:0 auto;padding:24px}
+.content{max-width:1480px;margin:0 auto;padding:32px 28px}
 .panel{display:none}.panel.on{display:block}
-tr.tx-hl>td{animation:txHl 2.4s ease-out}@keyframes txHl{0%,25%{background:rgba(239,68,68,.28)}100%{background:transparent}}
+tr.tx-hl>td{animation:txHl 2.4s ease-out}@keyframes txHl{0%,25%{background:rgba(239,83,80,.28)}100%{background:transparent}}
 
 /* ── Chips ── */
-.chips{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
-.chips .chip{flex:1 1 200px;max-width:300px}
+.chips{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:28px}
+.chips .chip{flex:1 1 200px;max-width:320px}
 .pills{display:flex;gap:4px;flex-wrap:wrap}
 .pill{padding:4px 10px;background:none;border:1px solid var(--border);border-radius:var(--r);color:var(--sub);font-size:11px;font-weight:600;cursor:pointer;transition:.12s}
 .pill:hover{color:var(--text);border-color:var(--border2)}
 .pill.on{background:var(--surface2);color:#fff;border-color:var(--border2)}
 .ter-inp{width:72px;padding:3px 6px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:11px}
 .ter-inp:focus{outline:none;border-color:var(--accent)}
-.chip{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
-.chip .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--sub)}
-.chip .v{font-size:19px;font-weight:600;margin-top:8px;color:var(--text);font-family:var(--mono)}
-.chip .s{font-size:11px;color:var(--sub);margin-top:4px;font-family:var(--mono)}
+.chip{background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:18px 20px}
+.chip .l{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);font-weight:600}
+.chip .v{font-size:26px;font-weight:700;margin-top:10px;color:var(--text);font-family:inherit;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.chip .s{font-size:12px;color:var(--sub);margin-top:6px;font-family:var(--mono)}
+/* hero metric — Total Value */
+.chip-hero{flex:1 1 320px!important;max-width:420px!important}
+.chip-hero .v{font-size:clamp(2.4rem,5vw,3.2rem);line-height:1.05;margin-top:12px}
+.chip-hero .l{font-size:11px}
 
 /* ── Cards ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
-.card+.card{margin-top:16px}
-.card-title{font-size:10.5px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card{background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card+.card{margin-top:20px}
+.card-title{font-size:11px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .chart-row{display:grid;grid-template-columns:1.85fr 1fr;gap:16px;margin-bottom:16px}
 .chart-wrap{position:relative}
-.chart-loading{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--sub);background:rgba(10,10,10,.72);padding:4px 9px;border:1px solid var(--border);border-radius:var(--r);z-index:5}
+.chart-loading{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--sub);background:rgba(0,0,0,.78);padding:4px 9px;border:1px solid var(--border);border-radius:var(--r);z-index:5}
 
 /* ── Tables ── */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
-thead th{text-align:left;padding:8px 10px;color:var(--sub);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none}
+thead th{text-align:left;padding:9px 10px;color:var(--sub);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none}
 tbody tr{border-bottom:1px solid var(--border)}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--surface2)}
@@ -75,19 +79,19 @@ tbody td{padding:9px 10px;vertical-align:middle;font-family:var(--mono);font-siz
 
 /* ── Badges ── */
 .badge{display:inline-block;padding:2px 6px;border-radius:var(--r);font-size:11px;font-weight:600;font-family:var(--mono)}
-.up{background:rgba(34,197,94,.12);color:var(--green)}
-.dn{background:rgba(239,68,68,.12);color:var(--red)}
+.up{background:rgba(38,166,154,.12);color:var(--green)}
+.dn{background:rgba(239,83,80,.12);color:var(--red)}
 .flat{background:var(--surface2);color:var(--sub)}
-.tag-buy{background:rgba(34,197,94,.12);color:var(--green)}
-.tag-sell{background:rgba(239,68,68,.12);color:var(--red)}
+.tag-buy{background:rgba(38,166,154,.12);color:var(--green)}
+.tag-sell{background:rgba(239,83,80,.12);color:var(--red)}
 .tag-div{background:rgba(59,130,246,.12);color:var(--blue)}
 .cur{display:inline-block;padding:1px 5px;border-radius:var(--r);font-size:10px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--sub);font-family:var(--mono)}
 
 /* ── Buttons ── */
-.btn{padding:7px 14px;border:1px solid transparent;border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:600;transition:.12s;white-space:nowrap}
-.btn-p{background:var(--accent);color:#06140a}.btn-p:hover{background:var(--accent-h)}
-.btn-s{background:var(--surface2);color:var(--text);border-color:var(--border)}.btn-s:hover{border-color:var(--border2)}
-.btn-d{background:rgba(239,68,68,.1);color:var(--red);border-color:transparent}.btn-d:hover{background:rgba(239,68,68,.2)}
+.btn{padding:8px 16px;border:1px solid transparent;border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:600;transition:.12s;white-space:nowrap}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:var(--accent-h)}
+.btn-s{background:transparent;color:var(--text);border-color:var(--border)}.btn-s:hover{border-color:var(--border2)}
+.btn-d{background:transparent;color:var(--red);border-color:transparent}.btn-d:hover{background:rgba(239,83,80,.14)}
 .btn-sm{padding:5px 11px;font-size:11.5px}
 .btn-xs{padding:3px 7px;font-size:11px}
 .btn:disabled{opacity:.45;cursor:default}
@@ -104,7 +108,7 @@ tbody td{padding:9px 10px;vertical-align:middle;font-family:var(--mono);font-siz
 
 /* ── Form ── */
 .fg{margin-bottom:13px}
-.fl{display:block;font-size:10px;font-weight:600;color:var(--sub);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fl{display:block;font-size:10px;font-weight:600;color:var(--sub);margin-bottom:5px;text-transform:uppercase;letter-spacing:.1em}
 .fc{width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:12.5px;transition:border-color .12s}
 .fc:focus{outline:none;border-color:var(--accent)}
 .fc option{background:var(--surface)}
@@ -112,8 +116,8 @@ tbody td{padding:9px 10px;vertical-align:middle;font-family:var(--mono);font-siz
 .f-act{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
 .type-sel{display:flex;gap:7px;margin-bottom:14px}
 .tbtn{flex:1;padding:9px;border:1px solid var(--border);border-radius:var(--r);background:none;color:var(--sub);cursor:pointer;font-weight:600;font-size:12.5px;transition:.12s}
-.tbtn.buy-on{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.08)}
-.tbtn.sell-on{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08)}
+.tbtn.buy-on{border-color:var(--green);color:var(--green);background:rgba(38,166,154,.08)}
+.tbtn.sell-on{border-color:var(--red);color:var(--red);background:rgba(239,83,80,.08)}
 .tbtn.div-on{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.08)}
 .calc{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:13px;font-size:12px;font-family:var(--mono)}
 .calc-row{display:flex;justify-content:space-between;margin-bottom:4px}
@@ -155,7 +159,7 @@ tbody td{padding:9px 10px;vertical-align:middle;font-family:var(--mono);font-siz
 
 /* ── Settings ── */
 .sset-sec{margin-bottom:26px;max-width:620px}
-.sset-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--sub);margin-bottom:12px}
+.sset-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);margin-bottom:12px}
 .sset-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)}
 .sset-row:last-child{border-bottom:none}
 .sset-lbl{font-size:13px}.sset-sub{font-size:11px;color:var(--sub);margin-top:2px}
@@ -164,7 +168,7 @@ tbody td{padding:9px 10px;vertical-align:middle;font-family:var(--mono);font-siz
 .tog-sl{position:absolute;inset:0;background:var(--surface2);border:1px solid var(--border);border-radius:11px;cursor:pointer;transition:.18s}
 .tog-sl::before{content:'';position:absolute;width:14px;height:14px;left:2px;top:2px;background:var(--sub);border-radius:50%;transition:.18s}
 .tog input:checked+.tog-sl{background:var(--accent);border-color:var(--accent)}
-.tog input:checked+.tog-sl::before{transform:translateX(18px);background:#06140a}
+.tog input:checked+.tog-sl::before{transform:translateX(18px);background:#fff}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:11px 15px;font-size:12px;z-index:9999;display:flex;align-items:center;gap:8px;transform:translateY(60px);opacity:0;transition:.22s;max-width:300px}
@@ -181,7 +185,7 @@ input[type=number]{-moz-appearance:textfield}
 /* ── Backtest ── */
 .bt2-sec{margin-bottom:16px}
 .bt2-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.bt2-step{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#06140a;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bt2-step{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .bt2-label{font-size:12.5px;font-weight:600}
 .preset-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
 .pchip{padding:5px 13px;border:1px solid var(--border);border-radius:var(--r);background:none;color:var(--sub);font-size:12px;font-weight:600;cursor:pointer;transition:.12s;white-space:nowrap}
@@ -226,16 +230,16 @@ input[type=number]{-moz-appearance:textfield}
 .proj-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
 @media(max-width:1000px){.proj-metrics{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:600px){.proj-metrics{grid-template-columns:1fr 1fr}}
-.pm-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px}
-.pm-box .pm-l{font-size:9.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.pm-box .pm-v{font-size:18px;font-weight:600;font-family:var(--mono)}
+.pm-box{background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.pm-box .pm-l{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;font-weight:600}
+.pm-box .pm-v{font-size:22px;font-weight:700;font-family:inherit;font-variant-numeric:tabular-nums;color:var(--text);letter-spacing:-.01em}
 .proj-layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:16px;align-items:start}
 .proj-inputs{position:sticky;top:70px}
 .proj-inputs .fg{margin-bottom:14px}
 .proj-inputs .fg:last-child{margin-bottom:0}
 @media(max-width:900px){.proj-layout{grid-template-columns:1fr}.proj-inputs{position:static}}
 .pj-feature{margin-bottom:12px}
-.pj-feature .pj-f-l{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.8px}
+.pj-feature .pj-f-l{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.1em}
 .pj-feature .pj-f-v{font-size:32px;font-weight:700;font-family:var(--mono);color:var(--green);margin-top:8px;line-height:1.05}
 .pj-feature .pj-f-s{font-size:11px;color:var(--sub);margin-top:7px}
 .proj-metrics4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
@@ -251,9 +255,9 @@ input[type=number]{-moz-appearance:textfield}
 .fstat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media(max-width:1000px){.fstat-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.fstat-grid{grid-template-columns:1fr}}
-.fstat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
-.fstat .fl{font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--sub);margin-bottom:0}
-.fstat .fv{font-size:20px;font-weight:600;margin-top:9px;color:#e0e0e0;font-family:var(--mono);line-height:1.25;word-break:break-word}
+.fstat{background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.fstat .fl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);margin-bottom:0;font-weight:600}
+.fstat .fv{font-size:23px;font-weight:700;margin-top:10px;color:var(--text);font-family:inherit;font-variant-numeric:tabular-nums;line-height:1.2;word-break:break-word;letter-spacing:-.01em}
 .fstat .fs{font-size:11px;margin-top:6px;font-family:var(--mono);color:var(--sub)}
 /* ── E domani? simulator ── */
 .sim-grid{display:grid;grid-template-columns:1fr 1.7fr;gap:16px;align-items:start}
@@ -326,7 +330,7 @@ input[type=number]{-moz-appearance:textfield}
   <!-- DASHBOARD -->
   <div class="panel on" id="tab-dashboard">
     <div class="chips">
-      <div class="chip"><div class="l">Total Value</div><div class="v" id="dash-val">—</div><div class="s" id="dash-val-s">—</div></div>
+      <div class="chip chip-hero"><div class="l">Total Value</div><div class="v" id="dash-val">—</div><div class="s" id="dash-val-s">—</div></div>
       <div class="chip"><div class="l">Day P&amp;L</div><div class="v" id="dash-day">—</div><div class="s" id="dash-day-s">—</div></div>
     </div>
     <div class="chart-row">
@@ -1129,9 +1133,9 @@ const Hist = {
 };
 
 // ── charts ───────────────────────────────────────────────────
-const COLORS=['#22c55e','#3b82f6','#a855f7','#f59e0b','#06b6d4','#ec4899','#84cc16','#f97316','#14b8a6','#8b5cf6','#eab308','#f43f5e'];
-const GRID='#1e1e1e', TICK='#666666', LIGHT='#e0e0e0';
-const TT={backgroundColor:'#141414',borderColor:'#2a2a2a',borderWidth:1,titleColor:'#f0f0f0',bodyColor:'#888888',padding:8,cornerRadius:2};
+const COLORS=['#26a69a','#2962ff','#a855f7','#f59e0b','#06b6d4','#ec4899','#84cc16','#f97316','#14b8a6','#8b5cf6','#eab308','#f43f5e'];
+const GRID='#1a1a1a', TICK='#6b6b6b', LIGHT='#e0e0e0';
+const TT={backgroundColor:'#0f0f0f',borderColor:'#262626',borderWidth:1,titleColor:'#ffffff',bodyColor:'#a0a0a0',padding:10,cornerRadius:2};
 const Charts = {
   _p:null,_a:null,_db:null,_dp:null,_range:'all',_perfBusy:false,
   setRange(r){this._range=r;document.querySelectorAll('#perf-pills .pill').forEach(b=>b.classList.toggle('on',b.dataset.r===r));this.perf();},
@@ -1239,9 +1243,9 @@ const Charts = {
     this._p=new Chart($('c-perf').getContext('2d'),{
       type:'line',
       data:{labels,datasets:[
-        {label:'Portfolio Value',data:vals,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.05)',fill:true,tension:.35,pointRadius:0,pointHoverRadius:4,borderWidth:2},
+        {label:'Portfolio Value',data:vals,borderColor:'#26a69a',backgroundColor:'rgba(38,166,154,.05)',fill:true,tension:.35,pointRadius:0,pointHoverRadius:4,borderWidth:2},
         {label:'Capital Invested',data:costs,borderColor:'#9aa0a6',backgroundColor:'transparent',borderDash:[5,4],tension:.35,pointRadius:0,pointHoverRadius:0,borderWidth:1.5},
-        {label:'Transactions',_marker:true,data:markerY,yAxisID:'y2',showLine:false,pointStyle:'triangle',pointRadius:6,pointHoverRadius:8,pointRotation:180,backgroundColor:'#ef4444',borderColor:'#ef4444'}
+        {label:'Transactions',_marker:true,data:markerY,yAxisID:'y2',showLine:false,pointStyle:'triangle',pointRadius:6,pointHoverRadius:8,pointRotation:180,backgroundColor:'#ef5350',borderColor:'#ef5350'}
       ]},
       options:opts
     });
@@ -1269,7 +1273,7 @@ const Charts = {
     const base=Cfg.get().cur;
     const cols=valid.map((_,i)=>COLORS[i%COLORS.length]);
     const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` ${fmt(c.parsed,2,base)} (${c.label})`}}},cutout:'64%'};
-    this._a=new Chart($('c-alloc').getContext('2d'),{type:'doughnut',data:{labels:valid.map(h=>h.sym),datasets:[{data:valid.map(h=>h.val),backgroundColor:cols,borderColor:'#0a0a0a',borderWidth:2}]},options:opts});
+    this._a=new Chart($('c-alloc').getContext('2d'),{type:'doughnut',data:{labels:valid.map(h=>h.sym),datasets:[{data:valid.map(h=>h.val),backgroundColor:cols,borderColor:'#000000',borderWidth:2}]},options:opts});
     $('a-leg').innerHTML=valid.slice(0,9).map((h,i)=>`<div class="a-row"><div style="display:flex;align-items:center;gap:7px"><span class="a-dot" style="background:${cols[i]}"></span>${h.sym}</div><span style="color:var(--sub)">${(h.wt||0).toFixed(1)}%</span></div>`).join('');
   },
   divs(){
@@ -1281,13 +1285,13 @@ const Charts = {
     bOpts.plugins.tooltip.callbacks={label:c=>` ${fmt(c.parsed.y,2,base)}`};
     if(this._db)this._db.destroy();
     if(bm.labels.length){
-      this._db=new Chart($('c-dbar').getContext('2d'),{type:'bar',data:{labels:bm.labels,datasets:[{label:'Dividends',data:bm.vals,backgroundColor:'rgba(34,197,94,.55)',borderColor:'#22c55e',borderWidth:1}]},options:bOpts});
+      this._db=new Chart($('c-dbar').getContext('2d'),{type:'bar',data:{labels:bm.labels,datasets:[{label:'Dividends',data:bm.vals,backgroundColor:'rgba(38,166,154,.55)',borderColor:'#26a69a',borderWidth:1}]},options:bOpts});
     }
     if(this._dp)this._dp.destroy();
     const sk=Object.keys(bs);
     if(sk.length){
       const pOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:TICK,font:{size:10}}},tooltip:{...TT,callbacks:{label:c=>` ${fmt(c.parsed,2,base)}`}}},cutout:'52%'};
-      this._dp=new Chart($('c-dpie').getContext('2d'),{type:'doughnut',data:{labels:sk,datasets:[{data:sk.map(k=>bs[k]),backgroundColor:COLORS.slice(0,sk.length),borderColor:'#0a0a0a',borderWidth:2}]},options:pOpts});
+      this._dp=new Chart($('c-dpie').getContext('2d'),{type:'doughnut',data:{labels:sk,datasets:[{data:sk.map(k=>bs[k]),backgroundColor:COLORS.slice(0,sk.length),borderColor:'#000000',borderWidth:2}]},options:pOpts});
     }
   }
 };
@@ -1658,7 +1662,7 @@ const Sim = {
     this._c=new Chart($('c-sim').getContext('2d'),{
       type:'line',
       data:{labels,datasets:[
-        {label:'Simulated',data:s.series,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.06)',fill:true,borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25},
+        {label:'Simulated',data:s.series,borderColor:'#26a69a',backgroundColor:'rgba(38,166,154,.06)',fill:true,borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25},
         {label:'Baseline (as-is)',data:b.series,borderColor:'#9aa0a6',backgroundColor:'transparent',borderDash:[5,4],borderWidth:1.5,pointRadius:0,pointHoverRadius:0,tension:.25}
       ]},
       options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
@@ -2331,13 +2335,13 @@ function avgCPI(y1,y2){
 const BT2={
   _booted:false,
   PRESETS:[
-    {key:'^GSPC',  name:'S&P 500',       isin:'—',              color:'#22c55e',note:'Price index, excl. dividends'},
+    {key:'^GSPC',  name:'S&P 500',       isin:'—',              color:'#26a69a',note:'Price index, excl. dividends'},
     {key:'GC=F',   name:'Gold',           isin:'—',              color:'#f59e0b',note:'Front-month futures'},
-    {key:'TLT',    name:'US Bonds (TLT)', isin:'US88162G1031',   color:'#3b82f6',note:'iShares 20+ yr Treasury ETF'},
+    {key:'TLT',    name:'US Bonds (TLT)', isin:'US88162G1031',   color:'#2962ff',note:'iShares 20+ yr Treasury ETF'},
     {key:'URTH',   name:'MSCI World',     isin:'IE00B4L5Y983',   color:'#06b6d4',note:'iShares MSCI World ETF'},
     {key:'^IXIC',  name:'NASDAQ',         isin:'—',              color:'#a855f7',note:'Price index, excl. dividends'},
   ],
-  PF_COLORS:['#22c55e','#3b82f6','#f59e0b'],
+  PF_COLORS:['#26a69a','#2962ff','#f59e0b'],
   assets:[],
   portfolios:[],
   activePriceTab:null,
@@ -2778,7 +2782,7 @@ const Proj={
       const ctx=chart.ctx, meta=chart.getDatasetMeta(chart.data.datasets.length-1);
       ctx.save();
       ctx.font=(chart.data.labels.length>18?'600 8px ':'600 9px ')+"Inter,sans-serif";
-      ctx.fillStyle='#f0f0f0'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+      ctx.fillStyle='#ffffff'; ctx.textAlign='center'; ctx.textBaseline='bottom';
       meta.data.forEach((bar,i)=>{
         const total=chart.data.datasets.reduce((s,ds)=>s+(+ds.data[i]||0),0);
         ctx.fillText(absK(total),bar.x,bar.y-3);
@@ -2789,7 +2793,7 @@ const Proj={
     this.chart=new Chart($('c-proj').getContext('2d'),{
       type:'bar',
       data:{labels,datasets:[
-        {label:'Contributions',data:contribLayer,backgroundColor:'#22c55e',stack:'s',borderWidth:0,maxBarThickness:46},
+        {label:'Contributions',data:contribLayer,backgroundColor:'#26a69a',stack:'s',borderWidth:0,maxBarThickness:46},
         {label:'Returns',data:returnLayer,backgroundColor:'#f97316',stack:'s',borderWidth:0,maxBarThickness:46}
       ]},
       options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
